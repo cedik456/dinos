@@ -43,8 +43,8 @@ export const radii = {
 
 export const layout = {
   contentMaxWidth: 680,
-  floatingTabBarHeight: 68,
-  floatingTabBarMaxWidth: 430,
+  floatingTabBarHeight: 64,
+  floatingTabBarMaxWidth: 390,
   minimumTouchTarget: 48,
 } as const;
 
@@ -64,13 +64,13 @@ export const shadows = {
   floating: Platform.select({
     ios: {
       shadowColor: "#172119",
-      shadowOffset: { width: 0, height: 10 },
-      shadowOpacity: 0.14,
-      shadowRadius: 24,
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.1,
+      shadowRadius: 18,
     },
-    android: { elevation: 12 },
+    android: { elevation: 8 },
     default: {
-      boxShadow: "0 10px 30px rgba(23, 33, 25, 0.14)",
+      boxShadow: "0 8px 24px rgba(23, 33, 25, 0.1)",
     },
   }),
 } as const;

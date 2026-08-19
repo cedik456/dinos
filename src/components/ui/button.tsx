@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, View, type PressableProps } from "react-native";
-import { SymbolView } from "expo-symbols";
 
+import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 import { colors, layout, radii, spacing } from "@/theme/tokens";
 
@@ -38,11 +38,11 @@ export function Button({
       </Text>
       {trailingArrow ? (
         <View style={styles.icon}>
-          <SymbolView
+          <Icon
             name={{
               ios: "arrow.right",
-              android: "arrow_forward",
-              web: "arrow_forward",
+              android: "arrow-forward",
+              web: "arrow-forward",
             }}
             size={17}
             weight="semibold"

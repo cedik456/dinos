@@ -7,8 +7,8 @@ export default function AthletePlanRoute() {
       description="Assigned workouts and nutrition targets will live here once their workflows are approved."
       icon={{
         ios: "calendar",
-        android: "calendar_month",
-        web: "calendar_month",
+        android: "calendar-month",
+        web: "calendar-month",
       }}
     />
   );

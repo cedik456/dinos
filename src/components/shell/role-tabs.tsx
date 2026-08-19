@@ -1,25 +1,19 @@
 import { BlurView } from "expo-blur";
 import { Tabs } from "expo-router";
-import { SymbolView, type SymbolViewProps } from "expo-symbols";
 import { Platform, StyleSheet, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { type AppRole, roleTabs } from "@/components/shell/role-tab-config";
+import { Icon, type IconName } from "@/components/ui/icon";
 import { useReducedTransparency } from "@/hooks/use-reduced-transparency";
 import { colors, layout, radii, shadows, spacing } from "@/theme/tokens";
 
-function TabIcon({
-  focused,
-  icon,
-}: {
-  focused: boolean;
-  icon: SymbolViewProps["name"];
-}) {
+function TabIcon({ focused, icon }: { focused: boolean; icon: IconName }) {
   return (
     <View
       style={[styles.iconContainer, focused && styles.iconContainerSelected]}
     >
-      <SymbolView
+      <Icon
         name={icon}
         size={22}
         weight={focused ? "semibold" : "regular"}
@@ -53,14 +47,15 @@ function GlassTabBackground() {
 export function RoleTabs({ role }: { role: AppRole }) {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
-  const tabBarWidth = Math.min(
-    width - spacing.xxxl,
-    layout.floatingTabBarMaxWidth,
+  const tabBarHorizontalInset = Math.max(
+    spacing.xxl,
+    (width - layout.floatingTabBarMaxWidth) / 2,
   );
   const tabs = roleTabs[role];
 
   return (
     <Tabs
+      safeAreaInsets={{ bottom: 0 }}
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
@@ -72,8 +67,8 @@ export function RoleTabs({ role }: { role: AppRole }) {
         tabBarStyle: [
           styles.tabBar,
           {
-            width: tabBarWidth,
-            left: (width - tabBarWidth) / 2,
+            start: tabBarHorizontalInset,
+            end: tabBarHorizontalInset,
             bottom: Math.max(insets.bottom, spacing.md),
           },
         ],
@@ -136,8 +131,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   iconContainer: {
-    width: 48,
-    height: 48,
+    width: 44,
+    height: 44,
     borderRadius: radii.pill,
     alignItems: "center",
     justifyContent: "center",

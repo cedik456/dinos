@@ -7,8 +7,8 @@ export default function AthleteProfileRoute() {
       description="Athlete details and app preferences will be added when account work begins."
       icon={{
         ios: "person.crop.circle",
-        android: "account_circle",
-        web: "account_circle",
+        android: "account-circle",
+        web: "account-circle",
       }}
     />
   );

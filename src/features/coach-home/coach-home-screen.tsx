@@ -1,10 +1,10 @@
 import { useRouter } from "expo-router";
 import { StyleSheet, View } from "react-native";
-import { SymbolView } from "expo-symbols";
 
 import { PageHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Icon } from "@/components/ui/icon";
 import { Screen, ScreenError, ScreenLoading } from "@/components/ui/screen";
 import { Text } from "@/components/ui/text";
 import { getCoachHome } from "@/data/mock/dashboards";
@@ -59,7 +59,7 @@ export function CoachHomeScreen() {
           <Text tone="muted">athletes currently in coaching</Text>
         </View>
         <View style={styles.rosterIcon}>
-          <SymbolView
+          <Icon
             name={{ ios: "person.2.fill", android: "group", web: "group" }}
             size={28}
             weight="semibold"

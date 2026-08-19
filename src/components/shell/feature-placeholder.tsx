@@ -1,7 +1,7 @@
 import { StyleSheet, View } from "react-native";
-import { SymbolView, type SymbolViewProps } from "expo-symbols";
 
 import { Card } from "@/components/ui/card";
+import { Icon, type IconName } from "@/components/ui/icon";
 import { Screen } from "@/components/ui/screen";
 import { Text } from "@/components/ui/text";
 import { colors, radii, spacing } from "@/theme/tokens";
@@ -9,7 +9,7 @@ import { colors, radii, spacing } from "@/theme/tokens";
 type FeaturePlaceholderProps = {
   title: string;
   description: string;
-  icon: SymbolViewProps["name"];
+  icon: IconName;
 };
 
 export function FeaturePlaceholder({
@@ -27,7 +27,7 @@ export function FeaturePlaceholder({
       </Text>
       <Card style={styles.card}>
         <View style={styles.iconContainer}>
-          <SymbolView
+          <Icon
             name={icon}
             size={26}
             weight="semibold"

@@ -1,11 +1,11 @@
-import type { SymbolViewProps } from "expo-symbols";
+import type { IconName } from "@/components/ui/icon";
 
 export type AppRole = "athlete" | "coach";
 
 export type TabDefinition = {
   route: string;
   label: string;
-  icon: SymbolViewProps["name"];
+  icon: IconName;
 };
 
 export const roleTabs: Record<AppRole, readonly TabDefinition[]> = {
@@ -20,22 +20,22 @@ export const roleTabs: Record<AppRole, readonly TabDefinition[]> = {
       label: "Plan",
       icon: {
         ios: "calendar",
-        android: "calendar_month",
-        web: "calendar_month",
+        android: "calendar-month",
+        web: "calendar-month",
       },
     },
     {
       route: "progress",
       label: "Progress",
-      icon: { ios: "chart.bar.fill", android: "bar_chart", web: "bar_chart" },
+      icon: { ios: "chart.bar.fill", android: "bar-chart", web: "bar-chart" },
     },
     {
       route: "profile",
       label: "Profile",
       icon: {
         ios: "person.crop.circle",
-        android: "account_circle",
-        web: "account_circle",
+        android: "account-circle",
+        web: "account-circle",
       },
     },
   ],

@@ -23,8 +23,8 @@ not part of this phase.
 - npm
 - Xcode or Android Studio for native simulators
 
-Expo SDK 57 may require a development build during the current Expo Go
-transition. The web target remains useful for quick layout review, but native
+The project currently targets Expo SDK 54 for native preview compatibility.
+The web target remains useful for quick layout review, but native devices and
 simulators are the source of truth for mobile behavior.
 
 ## Commands

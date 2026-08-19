@@ -1,9 +1,9 @@
 import { useRouter } from "expo-router";
-import { SymbolView, type SymbolViewProps } from "expo-symbols";
 import { StyleSheet, View } from "react-native";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Icon, type IconName } from "@/components/ui/icon";
 import { Screen } from "@/components/ui/screen";
 import { Text } from "@/components/ui/text";
 import { colors, radii, spacing } from "@/theme/tokens";
@@ -11,7 +11,7 @@ import { colors, radii, spacing } from "@/theme/tokens";
 type PreviewCardProps = {
   title: string;
   description: string;
-  icon: SymbolViewProps["name"];
+  icon: IconName;
   onPress: () => void;
 };
 
@@ -19,7 +19,7 @@ function PreviewCard({ title, description, icon, onPress }: PreviewCardProps) {
   return (
     <Card style={styles.previewCard}>
       <View style={styles.previewIcon}>
-        <SymbolView
+        <Icon
           name={icon}
           size={26}
           weight="semibold"
@@ -70,8 +70,8 @@ export default function PreviewLauncher() {
           description="See today's workout, daily targets, recovery facts, and weekly progress."
           icon={{
             ios: "figure.strengthtraining.traditional",
-            android: "fitness_center",
-            web: "fitness_center",
+            android: "fitness-center",
+            web: "fitness-center",
           }}
           onPress={() => router.push("/athlete")}
         />

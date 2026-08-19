@@ -12,7 +12,7 @@ infrastructure unless Ced explicitly approves the relevant phase.
 ## Stack
 
 - Node.js 24 LTS for local work
-- Expo SDK 57, React Native, TypeScript, and Expo Router
+- Expo SDK 54, React Native, TypeScript, and Expo Router
 - Stable JavaScript tabs from `expo-router`
 - React Native StyleSheet with semantic tokens from `src/theme/tokens.ts`
 - Jest with the `jest-expo` preset for focused non-visual checks

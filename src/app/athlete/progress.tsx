@@ -5,7 +5,7 @@ export default function AthleteProgressRoute() {
     <FeaturePlaceholder
       title="Progress"
       description="Workout consistency, volume, body weight, and recovery trends will appear here."
-      icon={{ ios: "chart.bar.fill", android: "bar_chart", web: "bar_chart" }}
+      icon={{ ios: "chart.bar.fill", android: "bar-chart", web: "bar-chart" }}
     />
   );
 }

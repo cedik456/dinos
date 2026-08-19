@@ -1,8 +1,8 @@
 import { StyleSheet, View } from "react-native";
-import { SymbolView } from "expo-symbols";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Icon } from "@/components/ui/icon";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Text } from "@/components/ui/text";
 import type { AthleteHomeData } from "@/data/mock/dashboards";
@@ -22,11 +22,11 @@ export function TodayWorkoutCard({
       <View style={styles.topRow}>
         <StatusBadge label={workout.status} tone="success" />
         <View style={styles.iconContainer}>
-          <SymbolView
+          <Icon
             name={{
               ios: "dumbbell.fill",
-              android: "fitness_center",
-              web: "fitness_center",
+              android: "fitness-center",
+              web: "fitness-center",
             }}
             size={24}
             weight="semibold"
