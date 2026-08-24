@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: dino-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: dino
+      POSTGRES_PASSWORD: dino_local_password
+      POSTGRES_DB: dino
+    ports:
+      - '5433:5432'
+    volumes:
+      - dino_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U dino -d dino']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  dino_postgres_data:

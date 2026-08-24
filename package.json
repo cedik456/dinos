@@ -46,10 +46,17 @@
     "test:watch": "jest --watch",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "npm run format:check && npm run lint && npm run typecheck && npm run test"
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm run test",
+    "api:start": "npm --prefix api run start:dev",
+    "api:check": "npm --prefix api run check",
+    "db:up": "npm --prefix api run db:up",
+    "db:down": "npm --prefix api run db:down"
   },
   "private": true,
   "jest": {
-    "preset": "jest-expo"
+    "preset": "jest-expo",
+    "testPathIgnorePatterns": [
+      "<rootDir>/api/"
+    ]
   }
 }
