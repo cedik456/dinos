@@ -1,6 +1,6 @@
 # Dino project handoff
 
-Last reviewed: August 22, 2026
+Last reviewed: August 24, 2026
 
 ## Start here
 
@@ -16,9 +16,8 @@ Before changing the project:
 2. Read this document for project status and sequencing.
 3. Read `README.md` and `api/README.md` for local setup and commands.
 4. Read `docs/design-direction.md` before changing the mobile interface.
-5. Run `git status` before editing. The current backend foundation is
-   uncommitted work owned by Ced and must not be overwritten or committed
-   without his approval.
+5. Run `git status` before editing. Preserve all existing changes, including
+   untracked files, unless Ced explicitly approves changing or removing them.
 6. Use Node.js 24 LTS. Explain every NestJS, npm, Docker, Git, database, and
    migration command to Ced before running it, including its purpose, expected
    changes, and meaningful risks or alternatives.
@@ -46,33 +45,24 @@ features are not part of the current backend-foundation gate.
 
 ## Current Git state
 
-Active branch: `feat/nest-postgres-foundation`
+Active branch: `main`
 
 Latest committed baseline:
 
 ```text
-cdcb2fc fix: align Expo SDK 54 and floating navigation
+f24604d Merge pull request #1 from cedik456/feat/nest-postgres-foundation
 ```
 
-The active branch and its remote currently point to that commit. The NestJS
-backend foundation exists only in Ced's uncommitted working tree as of this
-review. A fresh clone of the remote branch will not contain the backend until
-the gate is verified, approved, committed, and pushed.
+The Phase 2 backend foundation was committed as `7478975` and merged into
+`main` through pull request 1 as `f24604d` on August 24, 2026. A fresh clone of
+`main` includes both the Phase 1 mobile foundation and Phase 2 API foundation.
 
-Modified tracked files:
+Always use `git status` for the current working tree. Do not encode temporary
+modified or untracked file lists in this handoff because they become stale as
+soon as work continues.
 
-- `.gitignore`
-- `AGENTS.md`
-- `README.md`
-- `package.json`
-- `tsconfig.json`
-
-Untracked project area:
-
-- `api/`
-
-Do not run a repository-wide destructive cleanup, discard these changes, or
-commit them without Ced's explicit approval.
+Do not run a repository-wide destructive cleanup, discard user changes, or
+commit new work without Ced's explicit approval.
 
 ## Completed and committed foundation
 
@@ -89,11 +79,9 @@ Phase 1 provides:
 The committed mobile foundation has passed formatting, Expo lint, strict
 TypeScript, Jest, and all 18 Expo Doctor checks.
 
-## Work currently in progress
+Phase 2 provides:
 
-The uncommitted Phase 2 backend-foundation gate adds:
-
-- a strict NestJS 11 application under `api/` using npm;
+- a committed NestJS 11 application under `api/` using npm;
 - validated `HOST`, `PORT`, and `DATABASE_URL` configuration;
 - PostgreSQL 16 through Docker Compose on host port 5433;
 - Drizzle ORM 0.45.2 with the `pg` connection pool;
@@ -103,33 +91,34 @@ The uncommitted Phase 2 backend-foundation gate adds:
 - separate Expo and NestJS TypeScript/Jest boundaries; and
 - root convenience scripts for API and database development.
 
-Code-only verification already completed:
+## Verification record and known limitations
 
-- mobile formatting, lint, strict TypeScript, and five Jest tests;
-- Expo Doctor: 18/18 checks;
+The merge proves that Ced approved and committed the Phase 2 gate. The local
+commit and merge metadata do not preserve whether the real PostgreSQL end-to-end
+test and manual `GET /health` request were completed before that approval. Do
+not claim that historical verification without another record from Ced.
+
+The August 24, 2026 repository audit confirmed:
+
+- mobile lint, strict TypeScript, and five Jest tests;
+- Expo Doctor: 18/18 current checks;
 - API formatting, lint, strict TypeScript, two unit tests, and production build;
-  and
-- production API dependency audit: zero vulnerabilities.
+- tracked application and documentation files pass Prettier; and
+- the production API dependency audit reports zero vulnerabilities.
+
+The audit did not rerun the PostgreSQL-backed end-to-end test or manually start
+NestJS. The installed `.agents/` skill package is intentionally excluded from
+Prettier so upstream skill formatting does not affect Dino's quality gate. The
+complete root `npm run check` passes after adding that boundary.
+
+The Expo production dependency graph currently reports 19 advisories, including
+9 high severity findings in transitive Expo and Metro dependencies. npm only
+offers a forced Expo 57 upgrade, so resolve this through a reviewed Expo upgrade
+gate rather than `npm audit fix --force`.
 
 The original Drizzle 0.44 template version had a production SQL-injection
 advisory. Dino uses patched Drizzle 0.45.2. Do not downgrade it as part of an
 unrelated change.
-
-### Pending verification
-
-Docker Desktop is installed, but its daemon was not running during this review.
-The PostgreSQL container has therefore not been started and the database-backed
-end-to-end test has not run.
-
-Before this gate can be approved or committed:
-
-1. Start Docker Desktop and wait until its engine is running.
-2. Start Dino's PostgreSQL container.
-3. Run the API end-to-end test against the real container.
-4. Start NestJS and manually request `GET /health`.
-5. Rerun the complete mobile and API checks.
-6. Review the diff with Ced.
-7. Commit only after Ced explicitly approves the gate.
 
 ## Architecture
 
@@ -253,16 +242,15 @@ useful for quick layout review but is not the mobile source of truth.
   authorize copying irrelevant course or scheduling features.
 - Do not add authentication, account tables, workout schemas, nutrition
   schemas, uploads, offline synchronization, payments, chat, or AI features
-  during the current health-foundation gate.
+  until Ced approves the relevant next gate.
 - Work remains review-gated. Implement and verify one approved gate at a time,
   then wait for Ced before committing.
 
 ## Next approved sequence
 
-Immediate goal: finish and commit the live PostgreSQL health foundation.
-
-After Ced approves that gate, the next planning boundary is identity and
-coach-athlete relationships:
+The live PostgreSQL health foundation is committed. No identity implementation
+gate is approved yet. The next planning boundary is identity and coach-athlete
+relationships:
 
 - decide the authentication approach;
 - add users with one exclusive Coach or Athlete role;
@@ -278,8 +266,8 @@ identity and relationship model is approved and verified.
 - Read `AGENTS.md`, this handoff, both READMEs, and the design-direction file.
 - Inspect `git status` and the complete uncommitted diff before formatting or
   editing anything.
-- Use Node.js 24 and confirm Docker Desktop is running.
-- Start PostgreSQL and run the database-backed health test.
+- Use Node.js 24. Confirm Docker Desktop is running before database work.
+- Run the PostgreSQL-backed health test before changing database behavior.
 - Launch both Coach and Athlete mobile previews and understand that their data
   is still mocked.
 - Ask Ced which review gate is approved before adding a module or schema.
@@ -290,7 +278,7 @@ identity and relationship model is approved and verified.
 This file is the current status and sequencing source of truth for developer
 handoff. Update it whenever a gate is approved:
 
-- move finished work from the uncommitted section to the committed baseline;
+- move finished work into the committed baseline;
 - record the branch and commit hash;
 - record verification evidence and known limitations;
 - state the next approved gate; and

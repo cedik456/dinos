@@ -51,6 +51,10 @@ Use `npx expo install` for Expo-managed native dependencies.
 - Use accessible labels, 48 dp touch targets, text alongside status color, and
   enough bottom inset to clear the floating navigation.
 
+## Context files
+
+- [api/AGENTS.md](api/AGENTS.md) (NestJS, PostgreSQL, environment, and API verification guidance)
+
 ## Workflow
 
 Use review-gated phases. Implement and verify only the currently approved
