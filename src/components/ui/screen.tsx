@@ -3,6 +3,7 @@ import {
   ScrollView,
   StyleSheet,
   View,
+  useWindowDimensions,
   type ScrollViewProps,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -22,9 +23,10 @@ export function Screen({
   ...props
 }: ScreenProps) {
   const insets = useSafeAreaInsets();
+  const { height } = useWindowDimensions();
 
   return (
-    <View style={styles.background}>
+    <View style={[styles.background, { minHeight: height }]}>
       <ScrollView
         {...props}
         keyboardShouldPersistTaps="handled"

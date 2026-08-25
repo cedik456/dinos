@@ -1,4 +1,5 @@
 import { FeaturePlaceholder } from "@/components/shell/feature-placeholder";
+import { AccountAccessCard } from "@/features/identity/account-access-card";
 
 export default function CoachReportsRoute() {
   return (
@@ -10,6 +11,8 @@ export default function CoachReportsRoute() {
         android: "description",
         web: "description",
       }}
-    />
+    >
+      <AccountAccessCard />
+    </FeaturePlaceholder>
   );
 }

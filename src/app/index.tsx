@@ -1,147 +1,44 @@
-import { useRouter } from "expo-router";
-import { StyleSheet, View } from "react-native";
+import { Redirect, type Href } from "expo-router";
 
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Icon, type IconName } from "@/components/ui/icon";
-import { Screen } from "@/components/ui/screen";
-import { Text } from "@/components/ui/text";
-import { colors, radii, spacing } from "@/theme/tokens";
+import { AccessStateScreen } from "@/features/identity/access-state-screen";
+import { useIdentity } from "@/features/identity/identity-context";
+import { appAccessMode } from "@/features/preview/development-access";
+import { PreviewLauncherScreen } from "@/features/preview/preview-launcher-screen";
 
-type PreviewCardProps = {
-  title: string;
-  description: string;
-  icon: IconName;
-  onPress: () => void;
-};
+function IdentityGateRoute() {
+  const { state, refresh, clearAccessState } = useIdentity();
 
-function PreviewCard({ title, description, icon, onPress }: PreviewCardProps) {
-  return (
-    <Card style={styles.previewCard}>
-      <View style={styles.previewIcon}>
-        <Icon
-          name={icon}
-          size={26}
-          weight="semibold"
-          tintColor={colors.accent}
-        />
-      </View>
-      <View style={styles.previewCopy}>
-        <Text variant="heading">{title}</Text>
-        <Text tone="muted">{description}</Text>
-      </View>
-      <Button
-        label={`Open ${title.toLowerCase()}`}
-        trailingArrow
-        onPress={onPress}
+  if (state.kind === "loading") {
+    return <AccessStateScreen state="loading" onAction={refresh} />;
+  }
+  if (state.kind === "signed_out")
+    return <Redirect href={"/sign-in" as Href} />;
+  if (state.kind === "active") {
+    return (
+      <Redirect href={state.account.role === "Coach" ? "/coach" : "/athlete"} />
+    );
+  }
+  if (state.kind === "unlinked") return <Redirect href={"/activate" as Href} />;
+  if (state.kind === "disabled") {
+    return (
+      <AccessStateScreen
+        state="disabled"
+        requestId={state.requestId}
+        onAction={clearAccessState}
       />
-    </Card>
-  );
-}
-
-export default function PreviewLauncher() {
-  const router = useRouter();
-
+    );
+  }
   return (
-    <Screen contentContainerStyle={styles.screen}>
-      <View style={styles.hero}>
-        <Text variant="caption" tone="accent" style={styles.brand}>
-          DINO
-        </Text>
-        <Text accessibilityRole="header" variant="display">
-          Coaching, clearly connected.
-        </Text>
-        <Text tone="muted" style={styles.intro}>
-          Phase 1 validates Dino&apos;s Coach and Athlete mobile experiences
-          with deterministic preview data.
-        </Text>
-      </View>
-
-      <View style={styles.previewNotice}>
-        <View style={styles.noticeDot} />
-        <Text variant="label" tone="accent">
-          Development preview · No account or saved data
-        </Text>
-      </View>
-
-      <View style={styles.cards}>
-        <PreviewCard
-          title="Athlete preview"
-          description="See today's workout, daily targets, recovery facts, and weekly progress."
-          icon={{
-            ios: "figure.strengthtraining.traditional",
-            android: "fitness-center",
-            web: "fitness-center",
-          }}
-          onPress={() => router.push("/athlete")}
-        />
-        <PreviewCard
-          title="Coach preview"
-          description="Review roster activity, weekly adherence, and athletes needing attention."
-          icon={{ ios: "person.2.fill", android: "group", web: "group" }}
-          onPress={() => router.push("/coach")}
-        />
-      </View>
-
-      <Text variant="caption" tone="muted" style={styles.footer}>
-        These previews are intentionally separate. The production app will
-        choose the correct experience from the signed-in account—never from a
-        client-facing role toggle.
-      </Text>
-    </Screen>
+    <AccessStateScreen
+      state="retry"
+      requestId={state.requestId}
+      onAction={refresh}
+    />
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    justifyContent: "center",
-    gap: spacing.xxl,
-  },
-  hero: {
-    gap: spacing.md,
-  },
-  brand: {
-    letterSpacing: 2.2,
-  },
-  intro: {
-    maxWidth: 520,
-  },
-  previewNotice: {
-    minHeight: 40,
-    alignSelf: "flex-start",
-    borderRadius: radii.pill,
-    paddingHorizontal: spacing.md,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-    backgroundColor: colors.accentSoft,
-  },
-  noticeDot: {
-    width: 7,
-    height: 7,
-    borderRadius: radii.pill,
-    backgroundColor: colors.accent,
-  },
-  cards: {
-    gap: spacing.md,
-  },
-  previewCard: {
-    gap: spacing.lg,
-  },
-  previewIcon: {
-    width: 52,
-    height: 52,
-    borderRadius: radii.md,
-    backgroundColor: colors.accentSoft,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  previewCopy: {
-    gap: spacing.xs,
-  },
-  footer: {
-    maxWidth: 560,
-    textAlign: "center",
-    alignSelf: "center",
-  },
-});
+export default function IndexRoute() {
+  if (appAccessMode === "preview") return <PreviewLauncherScreen />;
+
+  return <IdentityGateRoute />;
+}

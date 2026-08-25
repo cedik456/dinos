@@ -13,7 +13,7 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "output": "static"
+      "output": "single"
     },
     "plugins": [
       "expo-router",
@@ -23,7 +23,9 @@
           "backgroundColor": "#F5F6F1"
         }
       ],
-      "expo-font"
+      "expo-font",
+      "@clerk/expo",
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true,
