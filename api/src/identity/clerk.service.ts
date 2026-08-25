@@ -1,4 +1,5 @@
 import { createClerkClient, verifyToken } from '@clerk/backend';
+import { decodeJwt } from '@clerk/backend/jwt';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
@@ -19,9 +20,12 @@ export class ClerkService {
   }
 
   async verifySessionToken(token: string) {
+    const hasAuthorizedParty = typeof decodeJwt(token).payload.azp === 'string';
     return verifyToken(token, {
       secretKey: this.secretKey,
-      authorizedParties: this.authorizedParties,
+      ...(hasAuthorizedParty
+        ? { authorizedParties: this.authorizedParties }
+        : {}),
     });
   }
 
@@ -44,6 +48,38 @@ export class ClerkService {
       publicMetadata: { dinoAccountId: accountId },
       notify: true,
     });
+  }
+
+  async listRosterInvitations(email: string, rosterInvitationId: string) {
+    const response = await this.client.invitations.getInvitationList({
+      query: email,
+      limit: 100,
+    });
+    return response.data.filter(
+      (invitation) =>
+        invitation.emailAddress.trim().toLowerCase() === email &&
+        invitation.publicMetadata?.dinoRosterInvitationId ===
+          rosterInvitationId,
+    );
+  }
+
+  createRosterInvitation(email: string, rosterInvitationId: string) {
+    return this.client.invitations.createInvitation({
+      emailAddress: email,
+      expiresInDays: 7,
+      ignoreExisting: true,
+      notify: true,
+      publicMetadata: { dinoRosterInvitationId: rosterInvitationId },
+    });
+  }
+
+  async getPrimaryEmail(subject: string): Promise<string> {
+    const user = await this.getUser(subject);
+    const primary = user.emailAddresses.find(
+      (address) => address.id === user.primaryEmailAddressId,
+    );
+    if (!primary) throw new Error('Primary email is unavailable.');
+    return primary.emailAddress.trim().toLowerCase();
   }
 
   revokeInvitation(invitationId: string) {

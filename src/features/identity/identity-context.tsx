@@ -5,6 +5,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type PropsWithChildren,
 } from "react";
@@ -32,13 +33,18 @@ export function IdentityProvider({ children }: PropsWithChildren) {
   const { isLoaded, isSignedIn, getToken } = useAuth();
   const { signOut } = useClerk();
   const [state, setState] = useState<IdentityState>({ kind: "loading" });
+  const getTokenRef = useRef(getToken);
+  const signOutRef = useRef(signOut);
+
+  getTokenRef.current = getToken;
+  signOutRef.current = signOut;
 
   const refresh = useCallback(async () => {
     if (!isLoaded) return setState({ kind: "loading" });
     if (!isSignedIn) return setState({ kind: "signed_out" });
     setState({ kind: "loading" });
     try {
-      const token = await getToken();
+      const token = await getTokenRef.current();
       if (!token)
         throw new DinoApiError(
           "Authentication is required.",
@@ -52,10 +58,10 @@ export function IdentityProvider({ children }: PropsWithChildren) {
           ? error
           : new DinoApiError("Identity is unavailable.", 0, "NETWORK_ERROR");
       const kind = identityFailureState(apiError.code);
-      if (kind === "disabled") await signOut();
+      if (kind === "disabled") await signOutRef.current();
       setState({ kind, requestId: apiError.requestId });
     }
-  }, [getToken, isLoaded, isSignedIn, signOut]);
+  }, [isLoaded, isSignedIn]);
 
   useEffect(() => {
     void refresh();

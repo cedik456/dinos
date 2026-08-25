@@ -24,6 +24,13 @@ import { RolesGuard } from './roles.guard';
     ResendLimiterService,
     { provide: APP_FILTER, useClass: IdentityErrorFilter },
   ],
-  exports: [AccountGuard, RolesGuard, IdentityService, OperatorService],
+  exports: [
+    AccountGuard,
+    ClerkService,
+    ClerkTokenGuard,
+    RolesGuard,
+    IdentityService,
+    OperatorService,
+  ],
 })
 export class IdentityModule {}

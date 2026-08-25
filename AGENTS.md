@@ -6,9 +6,10 @@ Dino is a phone-first coaching app with exclusive Coach and Athlete account
 types. Phase 1 is a verified frontend foundation with deterministic mock
 personas. Phase 2 is the approved NestJS/PostgreSQL backend foundation.
 
-The current Phase 2 gate is limited to local PostgreSQL connectivity and an API
-health endpoint. Do not add authentication, domain schemas, uploads, SQLite,
-offline synchronization, payments, chat, AI features, or other later-phase
+The current approved gate is the guarded local first assigned workout loop in
+spec 0002. Pilot and production assignment remain blocked until hosted identity
+and roster ownership are verified. Do not add uploads, SQLite, offline
+synchronization, payments, chat, AI features, or other later-phase
 infrastructure unless Ced approves the relevant gate.
 
 ## Stack
@@ -16,12 +17,19 @@ infrastructure unless Ced approves the relevant gate.
 - Node.js 24 LTS for local work
 - Expo SDK 54, React Native, TypeScript, and Expo Router
 - Stable JavaScript tabs from `expo-router`
-- React Native StyleSheet with semantic tokens from `src/theme/tokens.ts`
+- React Native StyleSheet for existing screens and Tailwind CSS v4 with
+  NativeWind v5 for workout surfaces, both using semantic tokens from
+  `src/theme/tokens.ts`
 - Jest with the `jest-expo` preset for focused non-visual checks
 - NestJS 11, PostgreSQL 16, Drizzle ORM, and npm under `api/`
 
 Read the version-matched Expo documentation before changing framework APIs.
 Use `npx expo install` for Expo-managed native dependencies.
+
+## Build approach
+
+Tracer Bullet, prove one real thread through every required layer before
+broadening it.
 
 ## Architecture
 
@@ -50,6 +58,8 @@ Use `npx expo install` for Expo-managed native dependencies.
   compact review information.
 - Use accessible labels, 48 dp touch targets, text alongside status color, and
   enough bottom inset to clear the floating navigation.
+- Design system: build all UI to `design.md` (art direction and the maximalist
+  product bar); token values live in CSS.
 
 ## Context files
 

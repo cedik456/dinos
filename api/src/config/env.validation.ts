@@ -14,4 +14,8 @@ export const envValidationSchema = Joi.object({
   CLERK_SECRET_KEY: Joi.string().min(1).required(),
   CLERK_AUTHORIZED_PARTIES: Joi.string().min(1).required(),
   DINO_OPERATOR_ID: Joi.string().min(1).required(),
+  DINO_PREVIEW_ACCESS_ENABLED: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(false),
 });

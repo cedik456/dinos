@@ -10,6 +10,13 @@ import {
 import { appAccessMode } from "@/features/preview/development-access";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { colors } from "@/theme/tokens";
+import {
+  ClerkWorkoutAuthProvider,
+  PreviewWorkoutAuthProvider,
+} from "@/features/workouts/workout-auth";
+import { WorkoutQueryProvider } from "@/features/workouts/workout-query-client";
+
+import "@/global.css";
 
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
@@ -60,7 +67,9 @@ function RootNavigator() {
           <Stack.Screen name="sign-in" />
           <Stack.Screen name="recovery" />
         </Stack.Protected>
-        <Stack.Protected guard={isSignedIn === true}>
+        <Stack.Protected
+          guard={isSignedIn === true && state.kind === "unlinked"}
+        >
           <Stack.Screen name="activate" />
         </Stack.Protected>
         <Stack.Protected
@@ -80,17 +89,29 @@ function RootNavigator() {
 }
 
 export default function RootLayout() {
-  if (appAccessMode === "preview") return <PreviewNavigator />;
+  if (appAccessMode === "preview") {
+    return (
+      <WorkoutQueryProvider>
+        <PreviewWorkoutAuthProvider>
+          <PreviewNavigator />
+        </PreviewWorkoutAuthProvider>
+      </WorkoutQueryProvider>
+    );
+  }
 
   if (!publishableKey) {
     throw new Error("EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY is required.");
   }
 
   return (
-    <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
-      <IdentityProvider>
-        <RootNavigator />
-      </IdentityProvider>
-    </ClerkProvider>
+    <WorkoutQueryProvider>
+      <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
+        <IdentityProvider>
+          <ClerkWorkoutAuthProvider>
+            <RootNavigator />
+          </ClerkWorkoutAuthProvider>
+        </IdentityProvider>
+      </ClerkProvider>
+    </WorkoutQueryProvider>
   );
 }

@@ -14,8 +14,8 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 1   | Mobile experience foundation                     | Foundation      | existing    |
 | 2   | API and database health foundation               | Foundation      | existing    |
 | 3   | Account identity and exclusive roles             | Foundation      | in-progress |
-| 4   | Private roster invitations                       | Slice 1         | planned     |
-| 5   | First assigned workout loop                      | Slice 1         | planned     |
+| 4   | Private roster invitations                       | Slice 1         | in-progress |
+| 5   | First assigned workout loop                      | Slice 1         | done        |
 | 6   | Private exercise library and demonstration media | Slice 2         | planned     |
 | 7   | Reusable workout templates and dated assignments | Slice 2         | planned     |
 | 8   | Weekly progress and review status                | Slice 3         | planned     |
@@ -52,19 +52,36 @@ Give every person a secure account with exactly one Coach or Athlete role. Keep 
 
 ## Slice 1: First real coaching loop
 
-### 4. Private roster invitations · needs a decision · Beta
+### 4. Private roster invitations · in-progress · Beta
 
 Let Ced authorize Coach signup for the pilot, then let each Coach invite an adult Athlete with a basic code or link. Each person creates and owns their credentials.
 **Done when:** an authorized Coach can create an account, invite an Athlete, and see that Athlete in a private roster after acceptance, while every other Coach is denied access.
 
-- [ ] Design it (spec): `/architect private roster invitations`
+- **Spec:** [0003](../specs/0003-private-roster-invitations/index.md)
+- **Code:** `api/src/roster/`, `api/src/database/schema.ts`, `api/src/workouts/`, and `src/features/roster/`
+- [x] Design it (spec): `/architect private roster invitations`
+- [x] Build it: `/develop private roster invitations`
+  - [x] Add the roster invitation, relationship, audit, retry, and provider reconciliation foundation, then prove one Coach can send and list a pending invitation, covers **AC-1**, **AC-4**, **AC-5**, **AC-6**, **AC-9**, **AC-11**, and **AC-12**.
+  - [x] Add exact email Athlete acceptance for new and eligible existing Accounts, then change the owning Coach roster from Pending to Active, covers **AC-2**, **AC-3**, **AC-4**, **AC-6**, **AC-7**, **AC-10**, **AC-11**, **AC-13**, and **AC-14**.
+  - [x] Add resend, revoke, expiry, rate limits, race handling, generic privacy responses, and every required failure state, covers **AC-5**, **AC-6**, **AC-7**, **AC-9**, **AC-10**, **AC-11**, and **AC-12**.
+  - [x] Replace the fixed hosted workout target with active roster Athlete selection and prove the complete private journey, covers **AC-4**, **AC-8**, **AC-13**, and **AC-14**.
+- [ ] Verify it: `/check verify private roster invitations`
+- [ ] Test it: `/test private roster invitations`
 
-### 5. First assigned workout loop · needs a decision
+### 5. First assigned workout loop · done
 
 Prove the whole product with one narrow real path. A Coach creates one simple workout, assigns it to an Athlete on a date, the Athlete marks it complete, and the Coach leaves one response and marks it reviewed.
 **Done when:** the full action moves through the mobile app, API, and database with clear loading, retry, empty, and error states, and both people can see the final review status.
 
-- [ ] Design it (spec): `/architect first assigned workout loop`
+- **Spec:** [0002](../specs/0002-first-assigned-workout-loop/index.md)
+- **Code:** `api/src/workouts/`, `api/src/database/schema.ts`, and `src/features/workouts/`
+- [x] Design it (spec): `/architect first assigned workout loop`
+- [x] Build it: `/develop first assigned workout loop`
+  - [x] Add the workout schema, fixed preview Accounts, actor scoped API, response contracts, retry rules, pagination, and privacy safeguards, covers **AC-1**, **AC-2**, **AC-3**, **AC-7**, **AC-8**, **AC-9**, **AC-10**, **AC-11**, **AC-13**, **AC-14**, and **AC-16**.
+  - [x] Add Tailwind, NativeWind, semantic theme parity, actor isolated TanStack Query state, Coach Programs, and Athlete Plan, covers **AC-1**, **AC-2**, **AC-3**, **AC-10**, **AC-11**, **AC-12**, **AC-15**, and **AC-16**.
+  - [x] Add Coach editing and Athlete completion with transactional conflict handling and preserved form state, covers **AC-4**, **AC-6**, **AC-8**, **AC-9**, **AC-10**, **AC-12**, and **AC-15**.
+  - [x] Add Coach Home review, final status visibility for both roles, and the complete cross platform journey evidence, covers **AC-4**, **AC-5**, **AC-8**, **AC-9**, **AC-10**, **AC-12**, and **AC-15**.
+- [x] Verify it: `/check verify first assigned workout loop`
 
 ## Slice 2: Reusable coaching work
 

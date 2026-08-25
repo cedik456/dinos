@@ -9,7 +9,7 @@ import { Screen, ScreenError, ScreenLoading } from "@/components/ui/screen";
 import { Text } from "@/components/ui/text";
 import { getCoachHome } from "@/data/mock/dashboards";
 import { CoachWeeklySummary } from "@/features/coach-home/components/coach-weekly-summary";
-import { ReviewQueue } from "@/features/coach-home/components/review-queue";
+import { CoachAwaitingReview } from "@/features/workouts/coach-awaiting-review";
 import { useAsyncData } from "@/hooks/use-async-data";
 import { colors, radii, spacing } from "@/theme/tokens";
 
@@ -69,7 +69,7 @@ export function CoachHomeScreen() {
       </Card>
 
       <CoachWeeklySummary metrics={data.weeklyMetrics} />
-      <ReviewQueue items={data.needsReview} />
+      <CoachAwaitingReview />
       <Button
         label="View all athletes"
         variant="secondary"

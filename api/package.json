@@ -26,8 +26,9 @@
     "db:down": "docker compose down",
     "db:logs": "docker compose logs -f postgres",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
-    "identity:operator": "ts-node -r tsconfig-paths/register src/identity/operator.ts"
+    "db:migrate": "ts-node -r tsconfig-paths/register src/database/migrate.ts",
+    "identity:operator": "ts-node -r tsconfig-paths/register src/identity/operator.ts",
+    "workout:seed-preview": "ts-node -r tsconfig-paths/register src/workouts/preview-seed.ts"
   },
   "dependencies": {
     "@clerk/backend": "^3.16.10",

@@ -3,6 +3,8 @@ import { StyleSheet, View } from "react-native";
 
 import { PageHeader } from "@/components/shell/page-header";
 import { MetricTile } from "@/components/ui/metric-tile";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Screen, ScreenError, ScreenLoading } from "@/components/ui/screen";
 import { Text } from "@/components/ui/text";
 import { getAthleteHome } from "@/data/mock/dashboards";
@@ -11,9 +13,13 @@ import { WeekStatusStrip } from "@/features/athlete-home/components/week-status-
 import { WeeklyProgressCard } from "@/features/athlete-home/components/weekly-progress-card";
 import { useAsyncData } from "@/hooks/use-async-data";
 import { spacing } from "@/theme/tokens";
+import { useMineRosterInvitation } from "@/features/roster/roster-queries";
+import { useWorkoutActor } from "@/features/workouts/workout-auth";
 
 export function AthleteHomeScreen() {
   const router = useRouter();
+  const { actor, ready } = useWorkoutActor("Athlete");
+  const invitation = useMineRosterInvitation(actor, ready);
   const { data, error, loading, retry } = useAsyncData(getAthleteHome);
 
   if (loading) {
@@ -43,6 +49,22 @@ export function AthleteHomeScreen() {
         initials={data.athlete.initials}
         profileLabel={`${data.athlete.firstName} profile`}
       />
+
+      {invitation.data ? (
+        <Card tone="accent" style={styles.invitationCard}>
+          <View style={styles.section}>
+            <Text variant="heading">Coach invitation waiting</Text>
+            <Text tone="muted">
+              {invitation.data.coachDisplayName} invited you to a private Dino
+              roster.
+            </Text>
+          </View>
+          <Button
+            label="Review invitation"
+            onPress={() => router.push("/activate")}
+          />
+        </Card>
+      ) : null}
 
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
@@ -117,4 +139,5 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     flexBasis: "46%",
   },
+  invitationCard: { gap: spacing.lg },
 });
