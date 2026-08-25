@@ -17,7 +17,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 4   | Private roster invitations                       | Slice 1         | in-progress |
 | 5   | First assigned workout loop                      | Slice 1         | done        |
 | 6   | Private exercise library and demonstration media | Slice 2         | planned     |
-| 7   | Reusable workout templates and dated assignments | Slice 2         | planned     |
+| 7   | Reusable workout templates and dated assignments | Slice 2         | in-progress |
 | 8   | Weekly progress and review status                | Slice 3         | planned     |
 | 9   | Privacy and account lifecycle                    | Slice 3         | planned     |
 | 10  | International units and dates                    | Slice 3         | planned     |
@@ -92,12 +92,15 @@ Give each Coach a private exercise library with optional reference exercises and
 
 - [ ] Design it (spec): `/architect private exercise library and demonstration media`
 
-### 7. Reusable workout templates and dated assignments · needs a decision
+### 7. Reusable workout templates and dated assignments · in-progress
 
 Let a Coach save a workout once, reuse it, and assign dated copies to Athletes without rebuilding repeated work.
 **Done when:** a Coach can create, edit, reuse, and assign a template, while edits never change an Athlete's completed workout history.
 
 - [ ] Design it (spec): `/architect reusable workout templates and dated assignments`
+- **Assumed slice spec:** [0004](../specs/0004-minimal-workout-templates.md)
+- **Code:** `api/src/templates/`, `api/src/database/schema.ts`, and `src/features/workouts/`
+- [x] Build the minimal template slice: `/develop minimal workout templates`
 
 ## Slice 3: Trust and visibility
 

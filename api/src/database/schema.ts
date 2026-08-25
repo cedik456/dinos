@@ -199,6 +199,92 @@ export const coachingRelationships = pgTable(
   ],
 );
 
+export const referenceExercises = pgTable(
+  'reference_exercises',
+  {
+    id: uuid('id').primaryKey(),
+    name: varchar('name', { length: 100 }).notNull(),
+    defaultSets: smallint('default_sets').notNull(),
+    defaultRepetitions: varchar('default_repetitions', {
+      length: 32,
+    }).notNull(),
+    instruction: varchar('instruction', { length: 1000 }),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('reference_exercises_name_unique').on(table.name),
+    check(
+      'reference_exercises_default_sets_range',
+      sql`${table.defaultSets} between 1 and 20`,
+    ),
+  ],
+);
+
+export const workoutTemplates = pgTable(
+  'workout_templates',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    coachAccountId: uuid('coach_account_id').references(() => accounts.id, {
+      onDelete: 'restrict',
+    }),
+    name: varchar('name', { length: 100 }).notNull(),
+    overviewNote: varchar('overview_note', { length: 1000 }),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index('workout_templates_coach_created_idx').on(
+      table.coachAccountId,
+      table.createdAt,
+      table.id,
+    ),
+    uniqueIndex('workout_templates_starter_name_unique')
+      .on(table.name)
+      .where(sql`${table.coachAccountId} is null`),
+  ],
+);
+
+export const workoutTemplateExercises = pgTable(
+  'workout_template_exercises',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    templateId: uuid('template_id')
+      .notNull()
+      .references(() => workoutTemplates.id, { onDelete: 'cascade' }),
+    referenceExerciseId: uuid('reference_exercise_id')
+      .notNull()
+      .references(() => referenceExercises.id, { onDelete: 'restrict' }),
+    position: smallint('position').notNull(),
+    sets: smallint('sets').notNull(),
+    repetitions: varchar('repetitions', { length: 32 }).notNull(),
+    instruction: varchar('instruction', { length: 1000 }),
+  },
+  (table) => [
+    uniqueIndex('workout_template_exercises_position_unique').on(
+      table.templateId,
+      table.position,
+    ),
+    uniqueIndex('workout_template_exercises_reference_unique').on(
+      table.templateId,
+      table.referenceExerciseId,
+    ),
+    check(
+      'workout_template_exercises_position_range',
+      sql`${table.position} between 1 and 12`,
+    ),
+    check(
+      'workout_template_exercises_sets_range',
+      sql`${table.sets} between 1 and 20`,
+    ),
+  ],
+);
+
 export const workoutAssignments = pgTable(
   'workout_assignments',
   {
@@ -332,5 +418,7 @@ export type AccountRole = Account['role'];
 export type AccountStatus = Account['status'];
 export type RosterInvitation = typeof rosterInvitations.$inferSelect;
 export type CoachingRelationship = typeof coachingRelationships.$inferSelect;
+export type ReferenceExercise = typeof referenceExercises.$inferSelect;
+export type WorkoutTemplate = typeof workoutTemplates.$inferSelect;
 export type WorkoutAssignment = typeof workoutAssignments.$inferSelect;
 export type WorkoutAssignmentStatus = WorkoutAssignment['status'];

@@ -5,6 +5,7 @@ import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './health/health.module';
 import { IdentityModule } from './identity/identity.module';
 import { RosterModule } from './roster/roster.module';
+import { TemplatesModule } from './templates/templates.module';
 import { WorkoutsModule } from './workouts/workouts.module';
 
 @Module({
@@ -18,6 +19,7 @@ import { WorkoutsModule } from './workouts/workouts.module';
     HealthModule,
     IdentityModule,
     RosterModule,
+    TemplatesModule,
     WorkoutsModule,
   ],
 })

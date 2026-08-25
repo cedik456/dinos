@@ -10,6 +10,6 @@ import { WorkoutsService } from './workouts.service';
   imports: [DatabaseModule, IdentityModule],
   controllers: [WorkoutsController],
   providers: [WorkoutActorGuard, WorkoutsService, PreviewSeedService],
-  exports: [PreviewSeedService],
+  exports: [PreviewSeedService, WorkoutActorGuard],
 })
 export class WorkoutsModule {}

@@ -4,6 +4,7 @@ import { Text, View } from "@/components/ui/tw";
 import type { WorkoutActor } from "@/features/workouts/workout-auth";
 import { useWorkoutActor } from "@/features/workouts/workout-auth";
 import { WorkoutSummaryCard } from "@/features/workouts/components/workout-summary-card";
+import { TemplateCard } from "@/features/workouts/components/template-card";
 import { useWorkoutOffline } from "@/features/workouts/workout-connectivity";
 import {
   WorkoutButton,
@@ -13,10 +14,12 @@ import {
   WorkoutScreen,
 } from "@/features/workouts/components/workout-ui";
 import { useWorkoutList } from "@/features/workouts/workout-queries";
+import { useTemplateList } from "@/features/workouts/template-queries";
 
 function ProgramsContent({ actor }: { actor: WorkoutActor }) {
   const router = useRouter();
   const offline = useWorkoutOffline();
+  const templates = useTemplateList(actor, true);
   const today = useWorkoutList(actor, true, {
     relative: "today",
     direction: "asc",
@@ -36,16 +39,90 @@ function ProgramsContent({ actor }: { actor: WorkoutActor }) {
       a.assignedDate.localeCompare(b.assignedDate) ||
       a.createdAt.localeCompare(b.createdAt),
   );
+  const templateItems =
+    templates.data?.pages.flatMap((page) => page.items) ?? [];
 
   return (
     <WorkoutScreen>
       <WorkoutHeader
         eyebrow="Coach workspace"
         title="Programs"
-        description="Build Mika’s next clear session, then keep assigned work current until completion."
+        description="Reuse a clear session template, then schedule dated work for each Athlete."
       />
       <WorkoutButton
+        label="Create a workout template"
+        onPress={() => router.push("/coach/programs/templates/new")}
+      />
+
+      <View className="gap-md">
+        <View className="gap-xs">
+          <Text className="font-sans text-heading font-bold text-foreground">
+            Workout templates
+          </Text>
+          <Text className="font-sans text-body text-muted">
+            Start with Dino’s Full Body A or save your own exercise selection.
+          </Text>
+        </View>
+        {templates.isPending ? (
+          <WorkoutLoading label="Loading workout templates" />
+        ) : null}
+        {templates.isError && templateItems.length === 0 ? (
+          <WorkoutMessage
+            tone="error"
+            title="Templates are unavailable"
+            message="Dino could not load your saved templates."
+            actionLabel="Try again"
+            onAction={() => void templates.refetch()}
+          />
+        ) : null}
+        {(offline || templates.isError) && templateItems.length > 0 ? (
+          <WorkoutMessage
+            tone="stale"
+            title="Showing saved templates"
+            message="Dino is offline or the template service is unavailable. New changes are not queued."
+            actionLabel="Retry"
+            onAction={() => void templates.refetch()}
+          />
+        ) : null}
+        {!templates.isPending &&
+        !templates.isError &&
+        templateItems.length === 0 ? (
+          <WorkoutMessage
+            title="No templates yet"
+            message="Create your first reusable workout without typing every exercise again."
+            actionLabel="Create template"
+            onAction={() => router.push("/coach/programs/templates/new")}
+          />
+        ) : null}
+        {templateItems.map((template) => (
+          <TemplateCard key={template.id} template={template} />
+        ))}
+        {templates.hasNextPage ? (
+          <WorkoutButton
+            label={
+              templates.isFetchingNextPage
+                ? "Loading more templates"
+                : "Load more templates"
+            }
+            variant="secondary"
+            disabled={templates.isFetchingNextPage}
+            onPress={() => void templates.fetchNextPage()}
+          />
+        ) : null}
+      </View>
+
+      <View className="gap-xs">
+        <Text className="font-sans text-heading font-bold text-foreground">
+          Dated assignments
+        </Text>
+        <Text className="font-sans text-body text-muted">
+          Assign a session to an active Athlete and keep it current through
+          review.
+        </Text>
+      </View>
+      <WorkoutButton
         label="Create and assign workout"
+        variant="secondary"
         onPress={() => router.push("/coach/programs/new")}
       />
       {firstLoad && !hasData && !unavailable ? (
