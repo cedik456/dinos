@@ -1,4 +1,5 @@
 import {
+  type QueryClient,
   queryOptions,
   useMutation,
   useQuery,
@@ -13,6 +14,7 @@ import {
   type WorkoutUpsertInput,
 } from "@/features/workouts/workout-api";
 import type { WorkoutActor } from "@/features/workouts/workout-auth";
+import { weeklyProgressKeys } from "@/features/weekly-progress/weekly-progress-queries";
 
 export const workoutKeys = {
   root: (actor: WorkoutActor) =>
@@ -70,12 +72,24 @@ export function useWorkoutDetail(
   });
 }
 
+export async function refreshWorkoutQueries(
+  queryClient: Pick<QueryClient, "setQueryData" | "invalidateQueries">,
+  actor: WorkoutActor,
+  detail: WorkoutDetail,
+) {
+  queryClient.setQueryData(workoutKeys.detail(actor, detail.id), detail);
+  await Promise.all([
+    queryClient.invalidateQueries({ queryKey: workoutKeys.root(actor) }),
+    queryClient.invalidateQueries({
+      queryKey: weeklyProgressKeys.root(actor),
+    }),
+  ]);
+}
+
 function useRefreshWorkout(actor: WorkoutActor) {
   const queryClient = useQueryClient();
-  return async (detail: WorkoutDetail) => {
-    queryClient.setQueryData(workoutKeys.detail(actor, detail.id), detail);
-    await queryClient.invalidateQueries({ queryKey: workoutKeys.root(actor) });
-  };
+  return (detail: WorkoutDetail) =>
+    refreshWorkoutQueries(queryClient, actor, detail);
 }
 
 export function useCreateWorkout(actor: WorkoutActor) {

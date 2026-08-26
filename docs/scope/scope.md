@@ -18,7 +18,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 5   | First assigned workout loop                      | Slice 1         | done        |
 | 6   | Private exercise library and demonstration media | Slice 2         | planned     |
 | 7   | Reusable workout templates and dated assignments | Slice 2         | in-progress |
-| 8   | Weekly progress and review status                | Slice 3         | planned     |
+| 8   | Weekly progress and review status                | Slice 3         | in-progress |
 | 9   | Privacy and account lifecycle                    | Slice 3         | planned     |
 | 10  | International units and dates                    | Slice 3         | planned     |
 | 11  | Product monitoring                               | Pilot readiness | planned     |
@@ -107,12 +107,19 @@ Let a Coach save a workout once, reuse it, and assign dated copies to Athletes w
 
 ## Slice 3: Trust and visibility
 
-### 8. Weekly progress and review status · needs a decision
+### 8. Weekly progress and review status · in-progress
 
 Replace the mock weekly views with real assignment, completion, and review information for both account types.
 **Done when:** the Athlete and assigned Coach see the same weekly coaching record, including what was assigned, completed, awaiting review, and reviewed.
 
-- [ ] Design it (spec): `/architect weekly progress and review status`
+- **Spec:** [0006](../specs/0006-weekly-progress-review.md)
+- **Code:** `api/src/weekly-progress/` and `src/features/weekly-progress/`
+- [x] Design it (spec): `/architect weekly progress and review status`
+- [x] Build it: `/develop weekly progress and review status`
+  - [x] Add the role scoped weekly API and derivations, covers **AC-1**, **AC-2**, **AC-4**, **AC-6**, and **AC-7**.
+  - [x] Add the weekly mobile queries and refresh behavior, covers **AC-4** and **AC-8**.
+  - [x] Replace the Athlete and Coach weekly mock surfaces, covers **AC-1**, **AC-2**, **AC-3**, **AC-4**, **AC-5**, and **AC-8**.
+- [ ] Verify it: `/check verify weekly progress and review status`
 
 ### 9. Privacy and account lifecycle · needs a decision · Beta
 

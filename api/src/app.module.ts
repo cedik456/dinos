@@ -7,6 +7,7 @@ import { IdentityModule } from './identity/identity.module';
 import { RosterModule } from './roster/roster.module';
 import { TemplatesModule } from './templates/templates.module';
 import { WorkoutsModule } from './workouts/workouts.module';
+import { WeeklyProgressModule } from './weekly-progress/weekly-progress.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { WorkoutsModule } from './workouts/workouts.module';
     RosterModule,
     TemplatesModule,
     WorkoutsModule,
+    WeeklyProgressModule,
   ],
 })
 export class AppModule {}

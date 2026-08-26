@@ -1,4 +1,5 @@
 import { useRouter } from "expo-router";
+import { useMemo } from "react";
 import { StyleSheet, View } from "react-native";
 
 import { PageHeader } from "@/components/shell/page-header";
@@ -15,10 +16,24 @@ import { useAsyncData } from "@/hooks/use-async-data";
 import { spacing } from "@/theme/tokens";
 import { useMineRosterInvitation } from "@/features/roster/roster-queries";
 import { useWorkoutActor } from "@/features/workouts/workout-auth";
+import { useWorkoutOffline } from "@/features/workouts/workout-connectivity";
+import {
+  currentWeekStart,
+  deviceTimeZone,
+  formatShortDate,
+} from "@/features/weekly-progress/weekly-progress-date";
+import { useWeeklyActor } from "@/features/weekly-progress/weekly-progress-queries";
 
 export function AthleteHomeScreen() {
   const router = useRouter();
   const { actor, ready } = useWorkoutActor("Athlete");
+  const offline = useWorkoutOffline();
+  const timeZone = useMemo(deviceTimeZone, []);
+  const weekStart = useMemo(() => currentWeekStart(timeZone), [timeZone]);
+  const weekly = useWeeklyActor(actor, ready, weekStart, timeZone);
+  const weeklyDetail =
+    weekly.data?.kind === "athlete" ? weekly.data : undefined;
+  const weeklyUnavailable = offline || weekly.isError;
   const invitation = useMineRosterInvitation(actor, ready);
   const { data, error, loading, retry } = useAsyncData(getAthleteHome);
 
@@ -46,8 +61,6 @@ export function AthleteHomeScreen() {
       <PageHeader
         greeting={`Good morning, ${data.athlete.firstName}`}
         context={data.context}
-        initials={data.athlete.initials}
-        profileLabel={`${data.athlete.firstName} profile`}
       />
 
       {invitation.data ? (
@@ -69,11 +82,35 @@ export function AthleteHomeScreen() {
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Text variant="heading">This week</Text>
-          <Text variant="caption" tone="muted">
-            10–16 Aug
-          </Text>
+          {weeklyDetail ? (
+            <Text variant="caption" tone="muted">
+              {formatShortDate(weeklyDetail.week.startDate)} to{" "}
+              {formatShortDate(weeklyDetail.week.endDate)}
+            </Text>
+          ) : null}
         </View>
-        <WeekStatusStrip days={data.week} />
+        {weekly.isPending && !weeklyDetail && !weeklyUnavailable ? (
+          <ScreenLoading label="Loading this week" />
+        ) : null}
+        {weeklyUnavailable ? (
+          <Card style={styles.invitationCard}>
+            <Text variant="bodyStrong">
+              {weeklyDetail
+                ? "Showing your last saved week"
+                : "Weekly progress unavailable"}
+            </Text>
+            <Text tone="muted">
+              This information may be out of date. No workout status has
+              changed.
+            </Text>
+            <Button
+              label="Retry"
+              variant="secondary"
+              onPress={() => void weekly.refetch()}
+            />
+          </Card>
+        ) : null}
+        {weeklyDetail ? <WeekStatusStrip days={weeklyDetail.days} /> : null}
       </View>
 
       <TodayWorkoutCard
@@ -112,7 +149,9 @@ export function AthleteHomeScreen() {
         </View>
       </View>
 
-      <WeeklyProgressCard progress={data.weeklyProgress} />
+      {weeklyDetail ? (
+        <WeeklyProgressCard summary={weeklyDetail.summary} />
+      ) : null}
     </Screen>
   );
 }

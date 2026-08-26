@@ -1,21 +1,14 @@
 import { StyleSheet, View } from "react-native";
 
 import { Text } from "@/components/ui/text";
-import { colors, radii, spacing } from "@/theme/tokens";
+import { spacing } from "@/theme/tokens";
 
 type PageHeaderProps = {
   greeting: string;
   context: string;
-  initials: string;
-  profileLabel: string;
 };
 
-export function PageHeader({
-  greeting,
-  context,
-  initials,
-  profileLabel,
-}: PageHeaderProps) {
+export function PageHeader({ greeting, context }: PageHeaderProps) {
   return (
     <View style={styles.header}>
       <View style={styles.copy}>
@@ -26,11 +19,6 @@ export function PageHeader({
           {greeting}
         </Text>
         <Text tone="muted">{context}</Text>
-      </View>
-      <View accessibilityLabel={profileLabel} style={styles.avatar}>
-        <Text variant="label" tone="accent">
-          {initials}
-        </Text>
       </View>
     </View>
   );
@@ -49,15 +37,5 @@ const styles = StyleSheet.create({
   },
   brand: {
     letterSpacing: 1.8,
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: radii.pill,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.accentSoft,
-    alignItems: "center",
-    justifyContent: "center",
   },
 });

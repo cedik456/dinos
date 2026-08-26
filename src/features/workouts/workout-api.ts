@@ -97,7 +97,7 @@ async function actorHeaders(
   return { Authorization: `Bearer ${token}` };
 }
 
-async function request<T>(
+export async function workoutRequest<T>(
   actor: WorkoutActor,
   path: string,
   options: { method?: string; body?: unknown; signal?: AbortSignal } = {},
@@ -161,28 +161,38 @@ export const workoutApi = {
     filters: WorkoutListFilters,
     signal?: AbortSignal,
   ) =>
-    request<WorkoutPage>(actor, `/workout-assignments${queryString(filters)}`, {
+    workoutRequest<WorkoutPage>(
+      actor,
+      `/workout-assignments${queryString(filters)}`,
+      {
+        signal,
+      },
+    ),
+  detail: (actor: WorkoutActor, id: string, signal?: AbortSignal) =>
+    workoutRequest<WorkoutDetail>(actor, `/workout-assignments/${id}`, {
       signal,
     }),
-  detail: (actor: WorkoutActor, id: string, signal?: AbortSignal) =>
-    request<WorkoutDetail>(actor, `/workout-assignments/${id}`, { signal }),
   create: (actor: WorkoutActor, input: WorkoutUpsertInput) =>
-    request<WorkoutDetail>(actor, "/workout-assignments", {
+    workoutRequest<WorkoutDetail>(actor, "/workout-assignments", {
       method: "POST",
       body: input,
     }),
   edit: (actor: WorkoutActor, id: string, input: WorkoutUpsertInput) =>
-    request<WorkoutDetail>(actor, `/workout-assignments/${id}`, {
+    workoutRequest<WorkoutDetail>(actor, `/workout-assignments/${id}`, {
       method: "PATCH",
       body: input,
     }),
   complete: (actor: WorkoutActor, id: string, note: string) =>
-    request<WorkoutDetail>(actor, `/workout-assignments/${id}/complete`, {
-      method: "POST",
-      body: { note },
-    }),
+    workoutRequest<WorkoutDetail>(
+      actor,
+      `/workout-assignments/${id}/complete`,
+      {
+        method: "POST",
+        body: { note },
+      },
+    ),
   review: (actor: WorkoutActor, id: string, response: string) =>
-    request<WorkoutDetail>(actor, `/workout-assignments/${id}/review`, {
+    workoutRequest<WorkoutDetail>(actor, `/workout-assignments/${id}/review`, {
       method: "POST",
       body: { response },
     }),

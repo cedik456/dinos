@@ -39,6 +39,7 @@ function PreviewNavigator() {
           <Stack.Screen name="sign-in" />
           <Stack.Screen name="recovery" />
           <Stack.Screen name="activate" />
+          <Stack.Screen name="account" />
         </Stack.Protected>
       </Stack>
       <StatusBar style="dark" />
@@ -71,6 +72,17 @@ function RootNavigator() {
           guard={isSignedIn === true && state.kind === "unlinked"}
         >
           <Stack.Screen name="activate" />
+        </Stack.Protected>
+        <Stack.Protected guard={state.kind === "active"}>
+          <Stack.Screen
+            name="account"
+            options={{
+              presentation: "formSheet",
+              sheetAllowedDetents: [0.42],
+              sheetGrabberVisible: true,
+              contentStyle: { backgroundColor: colors.background },
+            }}
+          />
         </Stack.Protected>
         <Stack.Protected
           guard={state.kind === "active" && state.account.role === "Athlete"}

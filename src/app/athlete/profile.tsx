@@ -1,5 +1,4 @@
 import { FeaturePlaceholder } from "@/components/shell/feature-placeholder";
-import { AccountAccessCard } from "@/features/identity/account-access-card";
 
 export default function AthleteProfileRoute() {
   return (
@@ -11,8 +10,6 @@ export default function AthleteProfileRoute() {
         android: "account-circle",
         web: "account-circle",
       }}
-    >
-      <AccountAccessCard />
-    </FeaturePlaceholder>
+    />
   );
 }

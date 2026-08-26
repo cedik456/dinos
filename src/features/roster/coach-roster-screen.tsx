@@ -80,8 +80,6 @@ export function CoachRosterScreen() {
         <PageHeader
           greeting="Your athletes"
           context="Private roster access starts after hosted Coach sign in."
-          initials="CO"
-          profileLabel="Coach preview"
         />
         <Card style={styles.card}>
           <Text variant="heading">Hosted account required</Text>
@@ -112,8 +110,6 @@ export function CoachRosterScreen() {
       <PageHeader
         greeting="Your athletes"
         context="Invite adults, then assign workouts only after they accept."
-        initials="CO"
-        profileLabel="Coach account"
       />
 
       <Card tone="accent" style={styles.card}>
