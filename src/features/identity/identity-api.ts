@@ -62,9 +62,4 @@ export const identityApi = {
   me: (token: string) => request<DinoAccount>("/me", { token }),
   activate: (token: string) =>
     request<DinoAccount>("/me/activate", { method: "POST", token }),
-  resendActivation: (email: string) =>
-    request<{ accepted: true }>("/auth/activation/resend", {
-      method: "POST",
-      body: JSON.stringify({ email }),
-    }),
 };

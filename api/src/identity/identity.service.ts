@@ -102,42 +102,6 @@ export class IdentityService {
     });
   }
 
-  async findPending(email: string) {
-    const canonical = email.trim().toLowerCase();
-    const [account] = await this.database.client
-      .select()
-      .from(accounts)
-      .where(
-        and(
-          eq(accounts.email, canonical),
-          eq(accounts.status, 'pending_activation'),
-        ),
-      )
-      .limit(1);
-    return account;
-  }
-
-  async resendActivation(email: string): Promise<void> {
-    const account = await this.findPending(email);
-    if (!account) return;
-    const invitations = await this.clerk.listAccountInvitations(
-      account.email,
-      account.id,
-    );
-    const active = invitations.filter(
-      (invitation) => invitation.status === 'pending',
-    );
-    if (active.length === 0) {
-      await this.clerk.createInvitation(account.email, account.id);
-      return;
-    }
-    await Promise.all(
-      active
-        .slice(1)
-        .map((invitation) => this.clerk.revokeInvitation(invitation.id)),
-    );
-  }
-
   static parseRole(value: string): AccountRole {
     if (value === 'Coach' || value === 'Athlete') return value;
     throw new Error('Role must be Coach or Athlete.');

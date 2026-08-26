@@ -37,7 +37,6 @@ function PreviewNavigator() {
         <Stack.Screen name="coach" />
         <Stack.Protected guard={false}>
           <Stack.Screen name="sign-in" />
-          <Stack.Screen name="recovery" />
           <Stack.Screen name="activate" />
           <Stack.Screen name="account" />
         </Stack.Protected>
@@ -66,7 +65,6 @@ function RootNavigator() {
         <Stack.Screen name="index" />
         <Stack.Protected guard={!isSignedIn}>
           <Stack.Screen name="sign-in" />
-          <Stack.Screen name="recovery" />
         </Stack.Protected>
         <Stack.Protected
           guard={isSignedIn === true && state.kind === "unlinked"}

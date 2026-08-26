@@ -238,11 +238,11 @@ describe('Account identity (e2e)', () => {
     ).toHaveLength(1);
   });
 
-  it('returns the generic accepted response for an unknown recovery email', async () => {
+  it('does not expose a public activation resend surface', async () => {
     await request(app.getHttpServer())
       .post('/auth/activation/resend')
       .send({ email: `unknown-${Date.now()}@example.com` })
-      .expect(202, { accepted: true });
+      .expect(404);
   });
 
   it('retains a cancelled pending account and one cancellation event', async () => {

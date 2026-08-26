@@ -8,7 +8,6 @@ import { IdentityController } from './identity.controller';
 import { IdentityErrorFilter } from './identity-error.filter';
 import { IdentityService } from './identity.service';
 import { OperatorService } from './operator.service';
-import { ResendLimiterService } from './resend-limiter.service';
 import { RolesGuard } from './roles.guard';
 
 @Module({
@@ -21,7 +20,6 @@ import { RolesGuard } from './roles.guard';
     RolesGuard,
     IdentityService,
     OperatorService,
-    ResendLimiterService,
     { provide: APP_FILTER, useClass: IdentityErrorFilter },
   ],
   exports: [

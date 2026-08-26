@@ -234,8 +234,8 @@ The Tracer Bullet approach first proves one real Coach thread through Clerk, mob
 6. [x] Add sign out, the limited activation resend endpoint, Clerk forgot password and reset flows, generic public responses, and full Clerk session revocation after reset, satisfies **AC-8**.
 7. [x] Add retry safe disable, reactivate, inspect, and pending cancellation operator actions. Use fail closed ordering, retain cancelled Accounts, and wire mobile handling from stable disabled and unmatched codes, satisfies **AC-6**, **AC-7**, **AC-9**, and **AC-11**.
 8. [x] Add focused mobile tests, NestJS unit tests, and real PostgreSQL end to end tests for every critical scenario in this spec, then run the Beta verification sequence, satisfies **AC-1** through **AC-11**.
-9. [ ] Install the version matched hosted authentication dependencies, replace the custom native sign in flow with `useHostedAuth()`, add the Expo web Account Portal redirect, and remove the custom recovery surface, satisfies **AC-3**, **AC-8**, **AC-9**, and **AC-12**.
-10. [ ] Remove the public activation resend API and its limiter, keep operator invitation reconciliation, and add focused tests that prove no Dino surface accepts credentials or recovery factors, satisfies **AC-1**, **AC-8**, and **AC-11**.
+9. [x] Install the version matched hosted authentication dependencies, replace the custom native sign in flow with `useHostedAuth()`, add the Expo web Account Portal redirect, and remove the custom recovery surface, satisfies **AC-3**, **AC-8**, **AC-9**, and **AC-12**.
+10. [x] Remove the public activation resend API and its limiter, keep operator invitation reconciliation, and add focused tests that prove no Dino surface accepts credentials or recovery factors, satisfies **AC-1**, **AC-8**, and **AC-11**.
 11. [ ] Enable and inspect Clerk Device Trust, then prove the existing invited user through Account Portal invitation completion, hosted sign in, Dino activation, exclusive role routing, session restoration, recovery, and a new device challenge, satisfies **AC-2** through **AC-12**.
 
 ## Consequences

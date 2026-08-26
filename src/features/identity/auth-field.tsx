@@ -8,9 +8,8 @@ type AuthFieldProps = {
   value: string;
   onChangeText: (value: string) => void;
   error?: string;
-  secureTextEntry?: boolean;
-  keyboardType?: "default" | "email-address" | "number-pad";
-  textContentType?: "emailAddress" | "password" | "newPassword" | "oneTimeCode";
+  keyboardType?: "default" | "email-address";
+  textContentType?: "emailAddress";
 };
 
 export function AuthField({ label, error, ...props }: AuthFieldProps) {
