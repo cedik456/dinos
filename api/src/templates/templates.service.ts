@@ -167,6 +167,34 @@ export class TemplatesService {
     return (await this.toTemplateDtos([template]))[0];
   }
 
+  async get(
+    actor: TemplateActor,
+    templateId: string,
+  ): Promise<WorkoutTemplateDto> {
+    this.requireCoach(actor);
+    const [template] = await this.database.client
+      .select()
+      .from(workoutTemplates)
+      .where(
+        and(
+          eq(workoutTemplates.id, templateId),
+          or(
+            isNull(workoutTemplates.coachAccountId),
+            eq(workoutTemplates.coachAccountId, actor.id),
+          ),
+        ),
+      )
+      .limit(1);
+    if (!template) {
+      return templateError(
+        'TEMPLATE_NOT_FOUND',
+        HttpStatus.NOT_FOUND,
+        'This workout template is unavailable.',
+      );
+    }
+    return (await this.toTemplateDtos([template]))[0];
+  }
+
   private requireCoach(actor: TemplateActor) {
     if (actor.role !== 'Coach') {
       return templateError(

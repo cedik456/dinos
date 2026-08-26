@@ -153,6 +153,8 @@ export const templateApi = {
       `/reference-exercises${queryString({ q: query, cursor, limit: 20 })}`,
       { signal },
     ),
+  detail: (actor: WorkoutActor, id: string, signal?: AbortSignal) =>
+    request<WorkoutTemplate>(actor, `/workout-templates/${id}`, { signal }),
   create: (actor: WorkoutActor, input: TemplateCreateInput) =>
     request<WorkoutTemplate>(actor, "/workout-templates", {
       method: "POST",

@@ -1,6 +1,7 @@
 import {
   useInfiniteQuery,
   useMutation,
+  useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
 
@@ -14,9 +15,25 @@ export const templateKeys = {
   root: (actor: WorkoutActor) =>
     ["workoutTemplates", actor.accountId, actor.role] as const,
   list: (actor: WorkoutActor) => [...templateKeys.root(actor), "list"] as const,
+  detail: (actor: WorkoutActor, id: string) =>
+    [...templateKeys.root(actor), "detail", id] as const,
   exercises: (actor: WorkoutActor, query: string) =>
     [...templateKeys.root(actor), "referenceExercises", query] as const,
 };
+
+export function useTemplateDetail(
+  actor: WorkoutActor | null,
+  ready: boolean,
+  id: string,
+) {
+  return useQuery({
+    queryKey: actor
+      ? templateKeys.detail(actor, id)
+      : ["workoutTemplates", "detail", "off", id],
+    queryFn: ({ signal }) => templateApi.detail(actor!, id, signal),
+    enabled: Boolean(actor && ready && id),
+  });
+}
 
 export function useTemplateList(actor: WorkoutActor | null, ready: boolean) {
   return useInfiniteQuery({

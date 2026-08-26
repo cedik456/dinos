@@ -1,8 +1,17 @@
 import { Text, View } from "@/components/ui/tw";
 import type { WorkoutTemplate } from "@/features/workouts/template-api";
-import { WorkoutCard } from "@/features/workouts/components/workout-ui";
+import {
+  WorkoutButton,
+  WorkoutCard,
+} from "@/features/workouts/components/workout-ui";
 
-export function TemplateCard({ template }: { template: WorkoutTemplate }) {
+export function TemplateCard({
+  template,
+  onUse,
+}: {
+  template: WorkoutTemplate;
+  onUse: () => void;
+}) {
   return (
     <WorkoutCard>
       <View className="flex-row items-start justify-between gap-md">
@@ -39,6 +48,11 @@ export function TemplateCard({ template }: { template: WorkoutTemplate }) {
           </View>
         ))}
       </View>
+      <WorkoutButton
+        label="Use template"
+        accessibilityLabel={`Use ${template.name} template`}
+        onPress={onUse}
+      />
     </WorkoutCard>
   );
 }

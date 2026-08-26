@@ -97,10 +97,13 @@ Give each Coach a private exercise library with optional reference exercises and
 Let a Coach save a workout once, reuse it, and assign dated copies to Athletes without rebuilding repeated work.
 **Done when:** a Coach can create, edit, reuse, and assign a template, while edits never change an Athlete's completed workout history.
 
-- [ ] Design it (spec): `/architect reusable workout templates and dated assignments`
+- [ ] Ratify the built slices and decide template editing (spec): `/architect reusable workout templates and dated assignments`
 - **Assumed slice spec:** [0004](../specs/0004-minimal-workout-templates.md)
-- **Code:** `api/src/templates/`, `api/src/database/schema.ts`, and `src/features/workouts/`
+- **Assumed assignment spec:** [0005](../specs/0005-template-assignment.md)
+- **Decision debt:** assumed decisions in specs 0004 and 0005 are built and awaiting ratification.
+- **Code:** `api/src/templates/`, `api/src/database/schema.ts`, `src/features/workouts/`, and `src/app/coach/programs/templates/`
 - [x] Build the minimal template slice: `/develop minimal workout templates`
+- [x] Build the template assignment slice: `/develop template assignment`
 
 ## Slice 3: Trust and visibility
 

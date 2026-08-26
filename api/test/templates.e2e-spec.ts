@@ -117,6 +117,27 @@ describe('Minimal workout templates (e2e)', () => {
     expect(body.items.map((item) => item.name)).not.toContain(
       'Private other Coach template',
     );
+
+    const detail = await request(app.getHttpServer())
+      .get(`/workout-templates/${body.items[0]?.id}`)
+      .set('x-dino-preview-role', 'coach')
+      .expect(200);
+    expect(detail.body).toMatchObject({
+      id: body.items[0]?.id,
+      name: 'Full Body A',
+      scope: 'Dino',
+    });
+    expect((detail.body as TemplateBody).exercises).toHaveLength(8);
+  });
+
+  it('hides another Coach private template from detail access', async () => {
+    await request(app.getHttpServer())
+      .get(`/workout-templates/${createdTemplateIds[0]}`)
+      .set('x-dino-preview-role', 'coach')
+      .expect(404)
+      .expect(({ body }) => {
+        expect((body as { code?: string }).code).toBe('TEMPLATE_NOT_FOUND');
+      });
   });
 
   it('searches and paginates reference exercises', async () => {

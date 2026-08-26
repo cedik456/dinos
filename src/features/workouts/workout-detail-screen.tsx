@@ -183,7 +183,8 @@ function DetailContent({
                   {exercise.name}
                 </Text>
                 <Text className="font-sans text-body font-semibold text-accent-foreground">
-                  {exercise.sets} sets · {exercise.repetitions}
+                  {exercise.sets} {exercise.sets === 1 ? "set" : "sets"} ·{" "}
+                  {exercise.repetitions}
                 </Text>
                 {exercise.instruction ? (
                   <Text className="font-sans text-body text-muted">

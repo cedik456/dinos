@@ -95,7 +95,13 @@ function ProgramsContent({ actor }: { actor: WorkoutActor }) {
           />
         ) : null}
         {templateItems.map((template) => (
-          <TemplateCard key={template.id} template={template} />
+          <TemplateCard
+            key={template.id}
+            template={template}
+            onUse={() =>
+              router.push(`/coach/programs/templates/${template.id}/assign`)
+            }
+          />
         ))}
         {templates.hasNextPage ? (
           <WorkoutButton
