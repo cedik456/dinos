@@ -1,4 +1,5 @@
 import { StyleSheet, View } from "react-native";
+import type { ReactNode } from "react";
 
 import { Card } from "@/components/ui/card";
 import { Icon, type IconName } from "@/components/ui/icon";
@@ -10,12 +11,14 @@ type FeaturePlaceholderProps = {
   title: string;
   description: string;
   icon: IconName;
+  children?: ReactNode;
 };
 
 export function FeaturePlaceholder({
   title,
   description,
   icon,
+  children,
 }: FeaturePlaceholderProps) {
   return (
     <Screen hasFloatingTabs contentContainerStyle={styles.screen}>
@@ -43,6 +46,7 @@ export function FeaturePlaceholder({
           in a later approved phase.
         </Text>
       </Card>
+      {children}
     </Screen>
   );
 }

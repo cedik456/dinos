@@ -17,7 +17,6 @@ export const colors = {
   warningSoft: "#FFF0D2",
   danger: "#A84040",
   dangerSoft: "#F9E3E1",
-  glassSurface: "rgba(250, 251, 247, 0.82)",
   glassFallback: "rgba(250, 251, 247, 0.96)",
   white: "#FFFFFF",
   transparent: "transparent",
@@ -44,8 +43,14 @@ export const radii = {
 export const layout = {
   contentMaxWidth: 680,
   floatingTabBarHeight: 64,
-  floatingTabBarMaxWidth: 390,
+  floatingTabBarMaxWidth: 320,
+  floatingTabIconSize: 44,
+  floatingTabIndicatorSize: 54,
   minimumTouchTarget: 48,
+} as const;
+
+export const motion = {
+  tabIndicatorDurationMs: 180,
 } as const;
 
 export const shadows = {

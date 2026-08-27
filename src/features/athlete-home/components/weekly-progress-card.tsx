@@ -3,15 +3,11 @@ import { StyleSheet, View } from "react-native";
 import { Card } from "@/components/ui/card";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { Text } from "@/components/ui/text";
-import type { AthleteHomeData } from "@/data/mock/dashboards";
+import type { WeeklySummary } from "@/features/weekly-progress/weekly-progress-api";
 import { spacing } from "@/theme/tokens";
 
-export function WeeklyProgressCard({
-  progress,
-}: {
-  progress: AthleteHomeData["weeklyProgress"];
-}) {
-  const percentage = Math.round((progress.completed / progress.assigned) * 100);
+export function WeeklyProgressCard({ summary }: { summary: WeeklySummary }) {
+  const percentage = summary.progressPercent ?? 0;
 
   return (
     <Card style={styles.card}>
@@ -21,19 +17,26 @@ export function WeeklyProgressCard({
           <Text tone="muted">Your assigned training this week</Text>
         </View>
         <Text variant="heading" tone="accent">
-          {percentage}%
+          {summary.progressPercent === null
+            ? "No workouts due"
+            : `${percentage}%`}
         </Text>
       </View>
       <ProgressBar
         value={percentage}
-        label={`${progress.completed} of ${progress.assigned} workouts completed`}
+        label={
+          summary.progressPercent === null
+            ? "No workouts due this week"
+            : `${summary.completedCount} of ${summary.dueCount} due workouts completed`
+        }
       />
       <View style={styles.footer}>
         <Text variant="label">
-          {progress.completed} of {progress.assigned} workouts
+          {summary.completedCount} of {summary.dueCount} due workouts
         </Text>
         <Text variant="caption" tone="muted">
-          {progress.volumeKg.toLocaleString()} kg volume
+          {summary.awaitingReviewCount} awaiting review ·{" "}
+          {summary.reviewedCount} reviewed
         </Text>
       </View>
     </Card>

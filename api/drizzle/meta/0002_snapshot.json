@@ -1,0 +1,1136 @@
+{
+  "id": "e5025fd2-ac8d-4262-9efe-d0ff2cb642ad",
+  "prevId": "e1d97441-f2b8-4419-952c-d5d5f966cf30",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.account_security_events": {
+      "name": "account_security_events",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "event_type": {
+          "name": "event_type",
+          "type": "security_event_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "actor_type": {
+          "name": "actor_type",
+          "type": "security_actor_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "actor_identifier": {
+          "name": "actor_identifier",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "occurred_at": {
+          "name": "occurred_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "account_security_events_account_idx": {
+          "name": "account_security_events_account_idx",
+          "columns": [
+            {
+              "expression": "account_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "account_security_events_account_id_accounts_id_fk": {
+          "name": "account_security_events_account_id_accounts_id_fk",
+          "tableFrom": "account_security_events",
+          "tableTo": "accounts",
+          "columnsFrom": ["account_id"],
+          "columnsTo": ["id"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.accounts": {
+      "name": "accounts",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "auth_subject": {
+          "name": "auth_subject",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "display_name": {
+          "name": "display_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "account_role",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "account_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending_activation'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "activated_at": {
+          "name": "activated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "disabled_at": {
+          "name": "disabled_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cancelled_at": {
+          "name": "cancelled_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "accounts_email_unique": {
+          "name": "accounts_email_unique",
+          "columns": [
+            {
+              "expression": "email",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "accounts_auth_subject_unique": {
+          "name": "accounts_auth_subject_unique",
+          "columns": [
+            {
+              "expression": "auth_subject",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"accounts\".\"auth_subject\" is not null",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "accounts_email_canonical": {
+          "name": "accounts_email_canonical",
+          "value": "\"accounts\".\"email\" = lower(trim(\"accounts\".\"email\"))"
+        },
+        "accounts_subject_by_status": {
+          "name": "accounts_subject_by_status",
+          "value": "((\"accounts\".\"status\" in ('active', 'disabled')) and \"accounts\".\"auth_subject\" is not null) or ((\"accounts\".\"status\" in ('pending_activation', 'cancelled')) and \"accounts\".\"auth_subject\" is null)"
+        },
+        "accounts_lifecycle_timestamps": {
+          "name": "accounts_lifecycle_timestamps",
+          "value": "(\"accounts\".\"status\" <> 'active' or \"accounts\".\"activated_at\" is not null) and (\"accounts\".\"status\" <> 'disabled' or \"accounts\".\"disabled_at\" is not null) and (\"accounts\".\"status\" <> 'cancelled' or \"accounts\".\"cancelled_at\" is not null)"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.assignment_exercises": {
+      "name": "assignment_exercises",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "assignment_id": {
+          "name": "assignment_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "position": {
+          "name": "position",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sets": {
+          "name": "sets",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "repetitions": {
+          "name": "repetitions",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "instruction": {
+          "name": "instruction",
+          "type": "varchar(1000)",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "assignment_exercises_assignment_position_unique": {
+          "name": "assignment_exercises_assignment_position_unique",
+          "columns": [
+            {
+              "expression": "assignment_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "position",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "assignment_exercises_assignment_id_workout_assignments_id_fk": {
+          "name": "assignment_exercises_assignment_id_workout_assignments_id_fk",
+          "tableFrom": "assignment_exercises",
+          "tableTo": "workout_assignments",
+          "columnsFrom": ["assignment_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "assignment_exercises_position_range": {
+          "name": "assignment_exercises_position_range",
+          "value": "\"assignment_exercises\".\"position\" between 1 and 12"
+        },
+        "assignment_exercises_sets_range": {
+          "name": "assignment_exercises_sets_range",
+          "value": "\"assignment_exercises\".\"sets\" between 1 and 20"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.coaching_relationships": {
+      "name": "coaching_relationships",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "coach_account_id": {
+          "name": "coach_account_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "athlete_account_id": {
+          "name": "athlete_account_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source_invitation_id": {
+          "name": "source_invitation_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "coaching_relationship_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'active'"
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "ended_at": {
+          "name": "ended_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "coaching_relationships_active_athlete_unique": {
+          "name": "coaching_relationships_active_athlete_unique",
+          "columns": [
+            {
+              "expression": "athlete_account_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"coaching_relationships\".\"status\" = 'active'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "coaching_relationships_coach_started_idx": {
+          "name": "coaching_relationships_coach_started_idx",
+          "columns": [
+            {
+              "expression": "coach_account_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "started_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "coaching_relationships_coach_account_id_accounts_id_fk": {
+          "name": "coaching_relationships_coach_account_id_accounts_id_fk",
+          "tableFrom": "coaching_relationships",
+          "tableTo": "accounts",
+          "columnsFrom": ["coach_account_id"],
+          "columnsTo": ["id"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "coaching_relationships_athlete_account_id_accounts_id_fk": {
+          "name": "coaching_relationships_athlete_account_id_accounts_id_fk",
+          "tableFrom": "coaching_relationships",
+          "tableTo": "accounts",
+          "columnsFrom": ["athlete_account_id"],
+          "columnsTo": ["id"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "coaching_relationships_source_invitation_id_roster_invitations_id_fk": {
+          "name": "coaching_relationships_source_invitation_id_roster_invitations_id_fk",
+          "tableFrom": "coaching_relationships",
+          "tableTo": "roster_invitations",
+          "columnsFrom": ["source_invitation_id"],
+          "columnsTo": ["id"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "coaching_relationships_source_invitation_id_unique": {
+          "name": "coaching_relationships_source_invitation_id_unique",
+          "nullsNotDistinct": false,
+          "columns": ["source_invitation_id"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "coaching_relationships_distinct_accounts": {
+          "name": "coaching_relationships_distinct_accounts",
+          "value": "\"coaching_relationships\".\"coach_account_id\" <> \"coaching_relationships\".\"athlete_account_id\""
+        },
+        "coaching_relationships_lifecycle_fields": {
+          "name": "coaching_relationships_lifecycle_fields",
+          "value": "(\"coaching_relationships\".\"status\" <> 'ended' or \"coaching_relationships\".\"ended_at\" is not null)"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.roster_invitations": {
+      "name": "roster_invitations",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "coach_account_id": {
+          "name": "coach_account_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "invited_email": {
+          "name": "invited_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "athlete_account_id": {
+          "name": "athlete_account_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "clerk_invitation_id": {
+          "name": "clerk_invitation_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "roster_invitation_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'sending'"
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "adult_confirmed_at": {
+          "name": "adult_confirmed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "accepted_at": {
+          "name": "accepted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "revoked_at": {
+          "name": "revoked_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "roster_invitations_clerk_id_unique": {
+          "name": "roster_invitations_clerk_id_unique",
+          "columns": [
+            {
+              "expression": "clerk_invitation_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"roster_invitations\".\"clerk_invitation_id\" is not null",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "roster_invitations_open_email_unique": {
+          "name": "roster_invitations_open_email_unique",
+          "columns": [
+            {
+              "expression": "invited_email",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"roster_invitations\".\"status\" in ('sending', 'pending', 'failed')",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "roster_invitations_coach_created_idx": {
+          "name": "roster_invitations_coach_created_idx",
+          "columns": [
+            {
+              "expression": "coach_account_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "roster_invitations_coach_account_id_accounts_id_fk": {
+          "name": "roster_invitations_coach_account_id_accounts_id_fk",
+          "tableFrom": "roster_invitations",
+          "tableTo": "accounts",
+          "columnsFrom": ["coach_account_id"],
+          "columnsTo": ["id"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "roster_invitations_athlete_account_id_accounts_id_fk": {
+          "name": "roster_invitations_athlete_account_id_accounts_id_fk",
+          "tableFrom": "roster_invitations",
+          "tableTo": "accounts",
+          "columnsFrom": ["athlete_account_id"],
+          "columnsTo": ["id"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "roster_invitations_email_canonical": {
+          "name": "roster_invitations_email_canonical",
+          "value": "\"roster_invitations\".\"invited_email\" = lower(trim(\"roster_invitations\".\"invited_email\"))"
+        },
+        "roster_invitations_lifecycle_fields": {
+          "name": "roster_invitations_lifecycle_fields",
+          "value": "(\"roster_invitations\".\"status\" <> 'accepted' or (\"roster_invitations\".\"athlete_account_id\" is not null and \"roster_invitations\".\"adult_confirmed_at\" is not null and \"roster_invitations\".\"accepted_at\" is not null)) and (\"roster_invitations\".\"status\" <> 'revoked' or \"roster_invitations\".\"revoked_at\" is not null) and (\"roster_invitations\".\"status\" <> 'pending' or (\"roster_invitations\".\"clerk_invitation_id\" is not null and \"roster_invitations\".\"expires_at\" is not null))"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.workout_assignments": {
+      "name": "workout_assignments",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "coach_account_id": {
+          "name": "coach_account_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "athlete_account_id": {
+          "name": "athlete_account_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "overview_note": {
+          "name": "overview_note",
+          "type": "varchar(1000)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "assigned_date": {
+          "name": "assigned_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "creation_time_zone": {
+          "name": "creation_time_zone",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "workout_assignment_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'assigned'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "workout_assignments_athlete_date_unique": {
+          "name": "workout_assignments_athlete_date_unique",
+          "columns": [
+            {
+              "expression": "athlete_account_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "assigned_date",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "workout_assignments_coach_date_idx": {
+          "name": "workout_assignments_coach_date_idx",
+          "columns": [
+            {
+              "expression": "coach_account_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "assigned_date",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "workout_assignments_athlete_date_idx": {
+          "name": "workout_assignments_athlete_date_idx",
+          "columns": [
+            {
+              "expression": "athlete_account_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "assigned_date",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "workout_assignments_coach_status_date_idx": {
+          "name": "workout_assignments_coach_status_date_idx",
+          "columns": [
+            {
+              "expression": "coach_account_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "assigned_date",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "workout_assignments_athlete_status_date_idx": {
+          "name": "workout_assignments_athlete_status_date_idx",
+          "columns": [
+            {
+              "expression": "athlete_account_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "assigned_date",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "workout_assignments_coach_account_id_accounts_id_fk": {
+          "name": "workout_assignments_coach_account_id_accounts_id_fk",
+          "tableFrom": "workout_assignments",
+          "tableTo": "accounts",
+          "columnsFrom": ["coach_account_id"],
+          "columnsTo": ["id"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "workout_assignments_athlete_account_id_accounts_id_fk": {
+          "name": "workout_assignments_athlete_account_id_accounts_id_fk",
+          "tableFrom": "workout_assignments",
+          "tableTo": "accounts",
+          "columnsFrom": ["athlete_account_id"],
+          "columnsTo": ["id"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "workout_assignments_distinct_actors": {
+          "name": "workout_assignments_distinct_actors",
+          "value": "\"workout_assignments\".\"coach_account_id\" <> \"workout_assignments\".\"athlete_account_id\""
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.workout_completions": {
+      "name": "workout_completions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "assignment_id": {
+          "name": "assignment_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "athlete_account_id": {
+          "name": "athlete_account_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "note": {
+          "name": "note",
+          "type": "varchar(1000)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "completed_at": {
+          "name": "completed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "workout_completions_completed_assignment_idx": {
+          "name": "workout_completions_completed_assignment_idx",
+          "columns": [
+            {
+              "expression": "completed_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "assignment_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "workout_completions_assignment_id_workout_assignments_id_fk": {
+          "name": "workout_completions_assignment_id_workout_assignments_id_fk",
+          "tableFrom": "workout_completions",
+          "tableTo": "workout_assignments",
+          "columnsFrom": ["assignment_id"],
+          "columnsTo": ["id"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "workout_completions_athlete_account_id_accounts_id_fk": {
+          "name": "workout_completions_athlete_account_id_accounts_id_fk",
+          "tableFrom": "workout_completions",
+          "tableTo": "accounts",
+          "columnsFrom": ["athlete_account_id"],
+          "columnsTo": ["id"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "workout_completions_assignment_id_unique": {
+          "name": "workout_completions_assignment_id_unique",
+          "nullsNotDistinct": false,
+          "columns": ["assignment_id"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.workout_reviews": {
+      "name": "workout_reviews",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "assignment_id": {
+          "name": "assignment_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "coach_account_id": {
+          "name": "coach_account_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "response": {
+          "name": "response",
+          "type": "varchar(1000)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reviewed_at": {
+          "name": "reviewed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "workout_reviews_assignment_id_workout_assignments_id_fk": {
+          "name": "workout_reviews_assignment_id_workout_assignments_id_fk",
+          "tableFrom": "workout_reviews",
+          "tableTo": "workout_assignments",
+          "columnsFrom": ["assignment_id"],
+          "columnsTo": ["id"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "workout_reviews_coach_account_id_accounts_id_fk": {
+          "name": "workout_reviews_coach_account_id_accounts_id_fk",
+          "tableFrom": "workout_reviews",
+          "tableTo": "accounts",
+          "columnsFrom": ["coach_account_id"],
+          "columnsTo": ["id"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "workout_reviews_assignment_id_unique": {
+          "name": "workout_reviews_assignment_id_unique",
+          "nullsNotDistinct": false,
+          "columns": ["assignment_id"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.account_role": {
+      "name": "account_role",
+      "schema": "public",
+      "values": ["Coach", "Athlete"]
+    },
+    "public.account_status": {
+      "name": "account_status",
+      "schema": "public",
+      "values": ["pending_activation", "active", "disabled", "cancelled"]
+    },
+    "public.coaching_relationship_status": {
+      "name": "coaching_relationship_status",
+      "schema": "public",
+      "values": ["active", "ended"]
+    },
+    "public.roster_invitation_status": {
+      "name": "roster_invitation_status",
+      "schema": "public",
+      "values": [
+        "sending",
+        "pending",
+        "failed",
+        "accepted",
+        "revoked",
+        "expired"
+      ]
+    },
+    "public.security_actor_type": {
+      "name": "security_actor_type",
+      "schema": "public",
+      "values": ["operator", "account", "system"]
+    },
+    "public.security_event_type": {
+      "name": "security_event_type",
+      "schema": "public",
+      "values": ["created", "activated", "disabled", "reactivated", "cancelled"]
+    },
+    "public.workout_assignment_status": {
+      "name": "workout_assignment_status",
+      "schema": "public",
+      "values": ["assigned", "completed", "reviewed"]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

@@ -1,0 +1,62 @@
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css";
+
+@theme {
+  --color-background: #f5f6f1;
+  --color-surface: #ffffff;
+  --color-surface-muted: #edf0e9;
+  --color-foreground: #171a16;
+  --color-muted: #687066;
+  --color-border: #dde2d8;
+  --color-accent: #2f6d49;
+  --color-accent-pressed: #25593b;
+  --color-accent-soft: #ddf0de;
+  --color-accent-foreground: #19432b;
+  --color-success: #2f7a4d;
+  --color-success-soft: #e1f2e5;
+  --color-warning: #996018;
+  --color-warning-soft: #fff0d2;
+  --color-danger: #a84040;
+  --color-danger-soft: #f9e3e1;
+  --color-inverse: #ffffff;
+
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 20px;
+  --spacing-2xl: 24px;
+  --spacing-3xl: 32px;
+
+  --radius-small: 10px;
+  --radius-medium: 14px;
+  --radius-card: 18px;
+  --radius-panel: 22px;
+  --radius-pill: 999px;
+
+  --text-caption: 12px;
+  --text-caption--line-height: 17px;
+  --text-label: 14px;
+  --text-label--line-height: 19px;
+  --text-body: 16px;
+  --text-body--line-height: 23px;
+  --text-heading: 20px;
+  --text-heading--line-height: 26px;
+  --text-title: 28px;
+  --text-title--line-height: 34px;
+  --text-display: 34px;
+  --text-display--line-height: 39px;
+}
+
+@media ios {
+  :root {
+    --font-sans: system-ui;
+  }
+}
+
+@media android {
+  :root {
+    --font-sans: normal;
+  }
+}

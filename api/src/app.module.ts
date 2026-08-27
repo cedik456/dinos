@@ -3,6 +3,11 @@ import { ConfigModule } from '@nestjs/config';
 import { envValidationSchema } from './config/env.validation';
 import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './health/health.module';
+import { IdentityModule } from './identity/identity.module';
+import { RosterModule } from './roster/roster.module';
+import { TemplatesModule } from './templates/templates.module';
+import { WorkoutsModule } from './workouts/workouts.module';
+import { WeeklyProgressModule } from './weekly-progress/weekly-progress.module';
 
 @Module({
   imports: [
@@ -13,6 +18,11 @@ import { HealthModule } from './health/health.module';
     }),
     DatabaseModule,
     HealthModule,
+    IdentityModule,
+    RosterModule,
+    TemplatesModule,
+    WorkoutsModule,
+    WeeklyProgressModule,
   ],
 })
 export class AppModule {}

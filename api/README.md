@@ -9,10 +9,12 @@ This foundation provides:
 - validated environment configuration;
 - a Drizzle connection to PostgreSQL;
 - `GET /health` for API and database readiness;
+- Clerk backed account activation and session verification;
+- hosted Clerk Account Portal invitation acceptance;
+- exclusive Coach and Athlete authorization;
+- account lifecycle controls and generic recovery responses;
+- an operator command for account provisioning and lifecycle changes;
 - focused unit and database-backed end-to-end tests.
-
-Authentication and domain schemas are intentionally deferred to the next
-approved gate.
 
 ## Requirements
 
@@ -28,6 +30,7 @@ Run these commands from `api/`:
 npm install
 cp .env.example .env
 npm run db:up
+npm run db:migrate
 npm run start:dev
 ```
 
@@ -48,6 +51,15 @@ Expected response:
   "database": "connected"
 }
 ```
+
+Provision an invited account from `api/`:
+
+```sh
+npm run identity:operator -- provision --email athlete@example.com --display-name "Avery Cruz" --role athlete
+```
+
+The other actions are `inspect`, `disable`, `reactivate`, and `cancel`. Resolve
+their target with either `--account-id` or `--email`.
 
 ## Verification
 

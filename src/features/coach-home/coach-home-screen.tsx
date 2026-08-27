@@ -1,4 +1,5 @@
 import { useRouter } from "expo-router";
+import { useMemo } from "react";
 import { StyleSheet, View } from "react-native";
 
 import { PageHeader } from "@/components/shell/page-header";
@@ -9,12 +10,26 @@ import { Screen, ScreenError, ScreenLoading } from "@/components/ui/screen";
 import { Text } from "@/components/ui/text";
 import { getCoachHome } from "@/data/mock/dashboards";
 import { CoachWeeklySummary } from "@/features/coach-home/components/coach-weekly-summary";
-import { ReviewQueue } from "@/features/coach-home/components/review-queue";
+import { CoachAwaitingReview } from "@/features/workouts/coach-awaiting-review";
 import { useAsyncData } from "@/hooks/use-async-data";
 import { colors, radii, spacing } from "@/theme/tokens";
+import { useWorkoutActor } from "@/features/workouts/workout-auth";
+import { useWorkoutOffline } from "@/features/workouts/workout-connectivity";
+import {
+  currentWeekStart,
+  deviceTimeZone,
+} from "@/features/weekly-progress/weekly-progress-date";
+import { useWeeklyActor } from "@/features/weekly-progress/weekly-progress-queries";
 
 export function CoachHomeScreen() {
   const router = useRouter();
+  const { actor, ready } = useWorkoutActor("Coach");
+  const offline = useWorkoutOffline();
+  const timeZone = useMemo(deviceTimeZone, []);
+  const weekStart = useMemo(() => currentWeekStart(timeZone), [timeZone]);
+  const weekly = useWeeklyActor(actor, ready, weekStart, timeZone);
+  const overview = weekly.data?.kind === "coach" ? weekly.data : undefined;
+  const weeklyUnavailable = offline || weekly.isError;
   const { data, error, loading, retry } = useAsyncData(getCoachHome);
 
   if (loading) {
@@ -41,35 +56,55 @@ export function CoachHomeScreen() {
       <PageHeader
         greeting={`Good morning, ${data.coach.firstName}`}
         context={data.context}
-        initials={data.coach.initials}
-        profileLabel={`${data.coach.firstName} profile`}
       />
 
-      <Card tone="accent" style={styles.rosterCard}>
-        <View style={styles.rosterCopy}>
-          <Text variant="caption" tone="accent">
-            ACTIVE ROSTER
-          </Text>
-          <Text
-            accessibilityLabel={`${data.activeAthletes} active athletes`}
-            variant="display"
-          >
-            {data.activeAthletes}
-          </Text>
-          <Text tone="muted">athletes currently in coaching</Text>
-        </View>
-        <View style={styles.rosterIcon}>
-          <Icon
-            name={{ ios: "person.2.fill", android: "group", web: "group" }}
-            size={28}
-            weight="semibold"
-            tintColor={colors.accent}
-          />
-        </View>
-      </Card>
+      {weekly.isPending && !overview && !weeklyUnavailable ? (
+        <ScreenLoading label="Loading Coach week" />
+      ) : null}
 
-      <CoachWeeklySummary metrics={data.weeklyMetrics} />
-      <ReviewQueue items={data.needsReview} />
+      {weeklyUnavailable ? (
+        <Card style={styles.summaryError}>
+          <Text variant="heading">
+            {overview
+              ? "Showing the last saved week"
+              : "Coach week unavailable"}
+          </Text>
+          <Text tone="muted">Dino could not refresh this roster summary.</Text>
+          <Button
+            label="Retry"
+            variant="secondary"
+            onPress={() => void weekly.refetch()}
+          />
+        </Card>
+      ) : null}
+
+      {overview ? (
+        <Card tone="accent" style={styles.rosterCard}>
+          <View style={styles.rosterCopy}>
+            <Text variant="caption" tone="accent">
+              ACTIVE ROSTER
+            </Text>
+            <Text
+              accessibilityLabel={`${overview.summary.activeAthleteCount} active athletes`}
+              variant="display"
+            >
+              {overview.summary.activeAthleteCount}
+            </Text>
+            <Text tone="muted">athletes currently in coaching</Text>
+          </View>
+          <View style={styles.rosterIcon}>
+            <Icon
+              name={{ ios: "person.2.fill", android: "group", web: "group" }}
+              size={28}
+              weight="semibold"
+              tintColor={colors.accent}
+            />
+          </View>
+        </Card>
+      ) : null}
+
+      {overview ? <CoachWeeklySummary summary={overview.summary} /> : null}
+      <CoachAwaitingReview />
       <Button
         label="View all athletes"
         variant="secondary"
@@ -103,4 +138,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  summaryError: { gap: spacing.md },
 });

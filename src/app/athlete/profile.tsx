@@ -4,7 +4,7 @@ export default function AthleteProfileRoute() {
   return (
     <FeaturePlaceholder
       title="Profile"
-      description="Athlete details and app preferences will be added when account work begins."
+      description="Personal preferences and profile editing will arrive in a later approved gate."
       icon={{
         ios: "person.crop.circle",
         android: "account-circle",

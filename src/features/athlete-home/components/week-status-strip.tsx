@@ -2,27 +2,43 @@ import { useRef } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 
 import { Text } from "@/components/ui/text";
-import type { WeekDay } from "@/data/mock/dashboards";
+import type {
+  WeeklyAthleteDetail,
+  WeeklyDayState,
+} from "@/features/weekly-progress/weekly-progress-api";
+import {
+  formatDay,
+  formatShortDate,
+} from "@/features/weekly-progress/weekly-progress-date";
 import { colors, radii, spacing } from "@/theme/tokens";
 
 const statusCopy: Record<
-  WeekDay["state"],
+  WeeklyDayState,
   { accessible: string; visible: string }
 > = {
-  complete: { accessible: "workout complete", visible: "Done" },
+  reviewed: { accessible: "reviewed", visible: "Reviewed" },
+  awaiting_review: {
+    accessible: "complete and awaiting review",
+    visible: "Awaiting",
+  },
+  missed: { accessible: "workout missed", visible: "Missed" },
   today: { accessible: "today", visible: "Today" },
-  upcoming: { accessible: "upcoming", visible: "Next" },
+  scheduled: { accessible: "scheduled", visible: "Next" },
   rest: { accessible: "rest day", visible: "Rest" },
 };
 
-export function WeekStatusStrip({ days }: { days: WeekDay[] }) {
+export function WeekStatusStrip({
+  days,
+}: {
+  days: WeeklyAthleteDetail["days"];
+}) {
   const scrollView = useRef<ScrollView>(null);
 
   return (
     <ScrollView
       ref={scrollView}
       horizontal
-      accessibilityLabel="Workout status for August 10 to 16"
+      accessibilityLabel={`Workout status for ${formatShortDate(days[0]?.date ?? "")} to ${formatShortDate(days.at(-1)?.date ?? "")}`}
       contentContainerStyle={styles.days}
       onContentSizeChange={() =>
         scrollView.current?.scrollToEnd({ animated: false })
@@ -31,26 +47,29 @@ export function WeekStatusStrip({ days }: { days: WeekDay[] }) {
     >
       {days.map((item) => {
         const today = item.state === "today";
-        const complete = item.state === "complete";
+        const complete =
+          item.state === "reviewed" || item.state === "awaiting_review";
+        const missed = item.state === "missed";
         const status = statusCopy[item.state];
 
         return (
           <View
-            key={`${item.day}-${item.date}`}
+            key={item.date}
             accessible
-            accessibilityLabel={`${item.day}, August ${item.date}, ${status.accessible}`}
+            accessibilityLabel={`${formatDay(item.date)}, ${formatShortDate(item.date)}, ${status.accessible}`}
             accessibilityRole="text"
             style={[
               styles.day,
               today && styles.dayToday,
               complete && styles.dayComplete,
+              missed && styles.dayMissed,
             ]}
           >
             <Text variant="caption" tone={today ? "inverse" : "muted"}>
-              {item.day}
+              {formatDay(item.date)}
             </Text>
             <Text variant="bodyStrong" tone={today ? "inverse" : "default"}>
-              {item.date}
+              {item.date.slice(-2)}
             </Text>
             <Text
               variant="caption"
@@ -89,6 +108,10 @@ const styles = StyleSheet.create({
   dayToday: {
     borderColor: colors.accent,
     backgroundColor: colors.accent,
+  },
+  dayMissed: {
+    borderColor: colors.danger,
+    backgroundColor: colors.dangerSoft,
   },
   stateLabel: {
     fontSize: 10,

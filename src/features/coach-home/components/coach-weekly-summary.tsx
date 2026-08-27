@@ -2,13 +2,13 @@ import { StyleSheet, View } from "react-native";
 
 import { MetricTile } from "@/components/ui/metric-tile";
 import { Text } from "@/components/ui/text";
-import type { CoachHomeData } from "@/data/mock/dashboards";
+import type { WeeklyCoachOverview } from "@/features/weekly-progress/weekly-progress-api";
 import { spacing } from "@/theme/tokens";
 
 export function CoachWeeklySummary({
-  metrics,
+  summary,
 }: {
-  metrics: CoachHomeData["weeklyMetrics"];
+  summary: WeeklyCoachOverview["summary"];
 }) {
   return (
     <View style={styles.section}>
@@ -21,20 +21,24 @@ export function CoachWeeklySummary({
       <View style={styles.metrics}>
         <MetricTile
           label="Adherence"
-          value={`${metrics.adherencePercent}%`}
-          detail="Workouts"
+          value={
+            summary.progressPercent === null
+              ? "No workouts due"
+              : `${summary.progressPercent}%`
+          }
+          detail={`${summary.completedCount} of ${summary.dueCount} due`}
           tone="accent"
           style={styles.metric}
         />
         <MetricTile
-          label="Check-ins"
-          value={String(metrics.checkInsSubmitted)}
-          detail="Submitted"
+          label="Review"
+          value={String(summary.awaitingReviewCount)}
+          detail="Awaiting"
           style={styles.metric}
         />
         <MetricTile
-          label="Overdue"
-          value={String(metrics.overdueItems)}
+          label="Missed"
+          value={String(summary.missedCount)}
           detail="Need follow-up"
           tone="warning"
           style={styles.metric}
