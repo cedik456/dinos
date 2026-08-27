@@ -2,9 +2,10 @@ import type { PropsWithChildren, ReactNode } from "react";
 import { StyleSheet, View } from "react-native";
 
 import { Card } from "@/components/ui/card";
+import { DinoLogo } from "@/components/ui/dino-logo";
 import { Screen } from "@/components/ui/screen";
 import { Text } from "@/components/ui/text";
-import { colors, radii, spacing } from "@/theme/tokens";
+import { spacing } from "@/theme/tokens";
 
 export function AuthShell({
   title,
@@ -15,11 +16,7 @@ export function AuthShell({
   return (
     <Screen contentContainerStyle={styles.screen}>
       <View style={styles.brandBlock}>
-        <View accessibilityElementsHidden style={styles.mark}>
-          <Text variant="heading" tone="inverse">
-            D
-          </Text>
-        </View>
+        <DinoLogo size="welcome" />
         <Text variant="caption" tone="accent" style={styles.wordmark}>
           DINO
         </Text>
@@ -39,14 +36,6 @@ export function AuthShell({
 const styles = StyleSheet.create({
   screen: { justifyContent: "center", gap: spacing.xxl },
   brandBlock: { alignItems: "center", gap: spacing.sm },
-  mark: {
-    width: 52,
-    height: 52,
-    borderRadius: radii.lg,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.accent,
-  },
   wordmark: { letterSpacing: 2.2 },
   subtitle: { textAlign: "center", maxWidth: 480 },
   card: { gap: spacing.lg },

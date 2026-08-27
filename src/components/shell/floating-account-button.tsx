@@ -17,6 +17,7 @@ import {
 } from "@/components/shell/account-profile";
 import { isMainTabPath } from "@/components/shell/main-tab-path";
 import type { AppRole } from "@/components/shell/role-tab-config";
+import { DinoLogo } from "@/components/ui/dino-logo";
 import { Text } from "@/components/ui/text";
 import { useIdentity } from "@/features/identity/identity-context";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
@@ -72,9 +73,13 @@ export function FloatingAccountButton({ role }: { role: AppRole }) {
           ) : (
             <View style={[StyleSheet.absoluteFill, styles.fallback]} />
           )}
-          <Text variant="label" tone="accent">
-            {accountInitials(state.account.displayName)}
-          </Text>
+          <DinoLogo />
+          <View accessibilityElementsHidden style={styles.divider} />
+          <View style={styles.initials}>
+            <Text variant="label" tone="accent">
+              {accountInitials(state.account.displayName)}
+            </Text>
+          </View>
         </Animated.View>
       </Pressable>
     </View>
@@ -87,15 +92,18 @@ const styles = StyleSheet.create({
     zIndex: 20,
   },
   button: {
-    width: layout.minimumTouchTarget,
+    minWidth: layout.minimumTouchTarget,
     height: layout.minimumTouchTarget,
     overflow: "hidden",
     borderRadius: radii.pill,
     borderCurve: "continuous",
     borderWidth: 1,
     borderColor: colors.white,
+    paddingHorizontal: spacing.sm,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    gap: spacing.sm,
     transform: [{ scale: 1 }],
     transitionProperty: "transform",
     transitionDuration: "120ms",
@@ -110,5 +118,15 @@ const styles = StyleSheet.create({
   },
   fallback: {
     backgroundColor: colors.glassFallback,
+  },
+  divider: {
+    width: 1,
+    height: spacing.xxl,
+    backgroundColor: colors.border,
+  },
+  initials: {
+    minWidth: spacing.xxl,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

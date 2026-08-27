@@ -3,6 +3,7 @@ import { StyleSheet, View } from "react-native";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { DinoLogo } from "@/components/ui/dino-logo";
 import { Icon, type IconName } from "@/components/ui/icon";
 import { Screen } from "@/components/ui/screen";
 import { Text } from "@/components/ui/text";
@@ -45,9 +46,12 @@ export function PreviewLauncherScreen() {
   return (
     <Screen contentContainerStyle={styles.screen}>
       <View style={styles.hero}>
-        <Text variant="caption" tone="accent" style={styles.brand}>
-          DINO
-        </Text>
+        <View style={styles.brandLockup}>
+          <DinoLogo size="welcome" />
+          <Text variant="caption" tone="accent" style={styles.brand}>
+            DINO
+          </Text>
+        </View>
         <Text accessibilityRole="header" variant="display">
           Coaching, clearly connected.
         </Text>
@@ -98,6 +102,11 @@ const styles = StyleSheet.create({
   },
   hero: {
     gap: spacing.md,
+  },
+  brandLockup: {
+    alignSelf: "flex-start",
+    alignItems: "center",
+    gap: spacing.sm,
   },
   brand: {
     letterSpacing: 2.2,
