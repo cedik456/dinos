@@ -25,8 +25,10 @@ describe("floating account control", () => {
 
   it("keeps the selected tab aligned on main and deeper tab routes", () => {
     expect(mainTabIndex("/athlete", "athlete")).toBe(0);
-    expect(mainTabIndex("/athlete/progress", "athlete")).toBe(2);
+    expect(mainTabIndex("/athlete/meals", "athlete")).toBe(2);
+    expect(mainTabIndex("/athlete/progress", "athlete")).toBe(3);
     expect(mainTabIndex("/athlete/plan/workout-1", "athlete")).toBe(1);
-    expect(mainTabIndex("/coach/reports/athlete-1", "coach")).toBe(3);
+    expect(mainTabIndex("/coach/meals", "coach")).toBe(3);
+    expect(mainTabIndex("/coach/reports/athlete-1", "coach")).toBe(4);
   });
 });

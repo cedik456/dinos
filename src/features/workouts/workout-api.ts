@@ -140,7 +140,10 @@ export async function workoutRequest<T>(
       body:
         options.body === undefined ? undefined : JSON.stringify(options.body),
     });
-    if (response.ok) return (await response.json()) as T;
+    if (response.ok) {
+      if (response.status === 204) return undefined as T;
+      return (await response.json()) as T;
+    }
     const payload = (await response.json().catch(() => null)) as {
       code?: string;
       message?: string;

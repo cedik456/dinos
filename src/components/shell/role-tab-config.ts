@@ -17,12 +17,17 @@ export const roleTabs: Record<AppRole, readonly TabDefinition[]> = {
     },
     {
       route: "plan",
-      label: "Plan",
+      label: "Workouts",
       icon: {
         ios: "calendar",
         android: "calendar-month",
         web: "calendar-month",
       },
+    },
+    {
+      route: "meals",
+      label: "Meals",
+      icon: { ios: "fork.knife", android: "restaurant", web: "restaurant" },
     },
     {
       route: "progress",
@@ -58,6 +63,11 @@ export const roleTabs: Record<AppRole, readonly TabDefinition[]> = {
         android: "assignment",
         web: "assignment",
       },
+    },
+    {
+      route: "meals",
+      label: "Meals",
+      icon: { ios: "fork.knife", android: "restaurant", web: "restaurant" },
     },
     {
       route: "reports",

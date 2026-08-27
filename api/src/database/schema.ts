@@ -2,8 +2,10 @@ import { sql } from 'drizzle-orm';
 import {
   boolean,
   check,
+  integer,
   index,
   jsonb,
+  numeric,
   pgEnum,
   pgTable,
   date,
@@ -51,6 +53,24 @@ export const coachingRelationshipStatus = pgEnum(
   'coaching_relationship_status',
   ['active', 'ended'],
 );
+export const mealRecommendationKind = pgEnum('meal_recommendation_kind', [
+  'breakfast',
+  'lunch',
+  'snack',
+  'dinner',
+  'custom',
+]);
+export const mealRecommendationUnit = pgEnum('meal_recommendation_unit', [
+  'g',
+  'kg',
+  'ml',
+  'L',
+  'pc',
+  'pcs',
+  'tbsp',
+  'tsp',
+  'cup',
+]);
 export const referenceExerciseCatalogStatus = pgEnum(
   'reference_exercise_catalog_status',
   ['active', 'unavailable'],
@@ -226,6 +246,112 @@ export const coachingRelationships = pgTable(
     check(
       'coaching_relationships_lifecycle_fields',
       sql`(${table.status} <> 'ended' or ${table.endedAt} is not null)`,
+    ),
+  ],
+);
+
+export const mealRecommendationPlans = pgTable(
+  'meal_recommendation_plans',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    coachingRelationshipId: uuid('coaching_relationship_id')
+      .notNull()
+      .references(() => coachingRelationships.id, { onDelete: 'restrict' }),
+    weekStart: date('week_start').notNull(),
+    version: integer('version').notNull().default(1),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('meal_recommendation_plans_relationship_week_unique').on(
+      table.coachingRelationshipId,
+      table.weekStart,
+    ),
+    index('meal_recommendation_plans_week_relationship_idx').on(
+      table.weekStart,
+      table.coachingRelationshipId,
+    ),
+    check(
+      'meal_recommendation_plans_monday',
+      sql`extract(isodow from ${table.weekStart}) = 1`,
+    ),
+    check(
+      'meal_recommendation_plans_positive_version',
+      sql`${table.version} > 0`,
+    ),
+  ],
+);
+
+export const mealRecommendationMeals = pgTable(
+  'meal_recommendation_meals',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    planId: uuid('plan_id')
+      .notNull()
+      .references(() => mealRecommendationPlans.id, { onDelete: 'cascade' }),
+    dayOffset: smallint('day_offset').notNull(),
+    kind: mealRecommendationKind('kind').notNull(),
+    customName: varchar('custom_name', { length: 60 }),
+    position: smallint('position').notNull(),
+  },
+  (table) => [
+    uniqueIndex('meal_recommendation_meals_plan_day_position_unique').on(
+      table.planId,
+      table.dayOffset,
+      table.position,
+    ),
+    index('meal_recommendation_meals_plan_day_idx').on(
+      table.planId,
+      table.dayOffset,
+    ),
+    check(
+      'meal_recommendation_meals_day_offset',
+      sql`${table.dayOffset} between 0 and 6`,
+    ),
+    check(
+      'meal_recommendation_meals_nonnegative_position',
+      sql`${table.position} >= 0`,
+    ),
+    check(
+      'meal_recommendation_meals_custom_name',
+      sql`(${table.kind} = 'custom' and ${table.customName} is not null and length(trim(${table.customName})) between 1 and 60) or (${table.kind} <> 'custom' and ${table.customName} is null)`,
+    ),
+  ],
+);
+
+export const mealRecommendationItems = pgTable(
+  'meal_recommendation_items',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    mealId: uuid('meal_id')
+      .notNull()
+      .references(() => mealRecommendationMeals.id, { onDelete: 'cascade' }),
+    name: varchar('name', { length: 100 }).notNull(),
+    amount: numeric('amount', { precision: 10, scale: 3 }).notNull(),
+    unit: mealRecommendationUnit('unit').notNull(),
+    position: smallint('position').notNull(),
+  },
+  (table) => [
+    uniqueIndex('meal_recommendation_items_meal_position_unique').on(
+      table.mealId,
+      table.position,
+    ),
+    index('meal_recommendation_items_meal_idx').on(table.mealId),
+    check(
+      'meal_recommendation_items_name_trimmed',
+      sql`length(trim(${table.name})) between 1 and 100 and ${table.name} = trim(${table.name})`,
+    ),
+    check(
+      'meal_recommendation_items_positive_amount',
+      sql`${table.amount} > 0`,
+    ),
+    check(
+      'meal_recommendation_items_nonnegative_position',
+      sql`${table.position} >= 0`,
     ),
   ],
 );
@@ -522,6 +648,12 @@ export type AccountRole = Account['role'];
 export type AccountStatus = Account['status'];
 export type RosterInvitation = typeof rosterInvitations.$inferSelect;
 export type CoachingRelationship = typeof coachingRelationships.$inferSelect;
+export type MealRecommendationPlan =
+  typeof mealRecommendationPlans.$inferSelect;
+export type MealRecommendationMeal =
+  typeof mealRecommendationMeals.$inferSelect;
+export type MealRecommendationItem =
+  typeof mealRecommendationItems.$inferSelect;
 export type ReferenceExercise = typeof referenceExercises.$inferSelect;
 export type CoachExerciseVideo = typeof coachExerciseVideos.$inferSelect;
 export type WorkoutTemplate = typeof workoutTemplates.$inferSelect;

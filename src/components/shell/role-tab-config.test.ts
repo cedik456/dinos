@@ -1,20 +1,22 @@
 import { roleTabs } from "@/components/shell/role-tab-config";
 
 describe("role tab configuration", () => {
-  it("gives athletes the four approved destinations", () => {
+  it("gives athletes the five approved destinations", () => {
     expect(roleTabs.athlete.map((tab) => tab.label)).toEqual([
       "Home",
-      "Plan",
+      "Workouts",
+      "Meals",
       "Progress",
       "Profile",
     ]);
   });
 
-  it("gives coaches the four approved destinations", () => {
+  it("gives coaches the five approved destinations", () => {
     expect(roleTabs.coach.map((tab) => tab.label)).toEqual([
       "Home",
       "Athletes",
       "Programs",
+      "Meals",
       "Reports",
     ]);
   });

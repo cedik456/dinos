@@ -50,6 +50,13 @@
       "when": 1787734632324,
       "tag": "0006_silly_red_skull",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1787810953935,
+      "tag": "0007_far_klaw",
+      "breakpoints": true
     }
   ]
 }

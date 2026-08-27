@@ -19,10 +19,11 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 6   | Exercise catalog and demonstration media         | Slice 2         | in-progress |
 | 7   | Reusable workout templates and dated assignments | Slice 2         | in-progress |
 | 8   | Weekly progress and review status                | Slice 3         | in-progress |
-| 9   | Privacy and account lifecycle                    | Slice 3         | planned     |
-| 10  | International units and dates                    | Slice 3         | planned     |
-| 11  | Product monitoring                               | Pilot readiness | planned     |
-| 12  | Private pilot distribution                       | Pilot readiness | planned     |
+| 9   | Meal recommendations                             | Slice 3         | in-progress |
+| 10  | Privacy and account lifecycle                    | Slice 3         | planned     |
+| 11  | International units and dates                    | Slice 3         | planned     |
+| 12  | Product monitoring                               | Pilot readiness | planned     |
+| 13  | Private pilot distribution                       | Pilot readiness | planned     |
 
 ## Foundations
 
@@ -127,16 +128,32 @@ Replace the mock weekly views with real assignment, completion, and review infor
   - [x] Add the role scoped weekly API and derivations, covers **AC-1**, **AC-2**, **AC-4**, **AC-6**, and **AC-7**.
   - [x] Add the weekly mobile queries and refresh behavior, covers **AC-4** and **AC-8**.
   - [x] Replace the Athlete and Coach weekly mock surfaces, covers **AC-1**, **AC-2**, **AC-3**, **AC-4**, **AC-5**, and **AC-8**.
-- [ ] Verify it: `/check verify weekly progress and review status`
+- [x] Verify it: `/check verify weekly progress and review status`
 
-### 9. Privacy and account lifecycle · needs a decision · Beta
+### 9. Meal recommendations · in-progress · Beta
+
+Let a Coach create simple weekly meal recommendations and let the Athlete read them one day at a time without turning meals into tasks or nutrition tracking.
+**Done when:** an active Coach can save and safely edit one relationship owned week, the Athlete can read eligible daily recommendations, and former Coaches cannot access them.
+
+- **Spec:** [0008](../specs/0008-meal-recommendations.md)
+- **Code:** `api/src/meal-recommendations/`, `api/src/database/schema.ts`, `src/features/meal-recommendations/`, and the role tab routes
+- [x] Design it (spec): `/architect meal recommendations`
+- [x] Build it: `/develop meal recommendations`
+  - [x] Add the relationship owned meal schema and role scoped weekly reads, covers **AC-1**, **AC-2**, **AC-3**, **AC-10**, **AC-11**, and **AC-13**.
+  - [x] Add atomic Save week and Delete week with validation, version conflicts, past week rules, and safe recovery, covers **AC-1**, **AC-4**, **AC-5**, **AC-6**, **AC-8**, and **AC-13**.
+  - [x] Add the Coach Meals editor, dirty form protection, and five destination navigation, covers **AC-1**, **AC-4**, **AC-5**, **AC-6**, **AC-8**, **AC-9**, and **AC-14**.
+  - [x] Add the Athlete daily view, relationship history rules, cached stale reads, cache refresh, and complete feature coverage, covers **AC-2**, **AC-3**, **AC-7**, **AC-10**, **AC-11**, **AC-12**, and **AC-14**.
+- [ ] Verify it: `/check verify meal recommendations`
+- [ ] Test it: `/test meal recommendations`
+
+### 10. Privacy and account lifecycle · needs a decision · Beta
 
 Give Athletes practical control over personal data and end Coach access when a coaching relationship ends.
 **Done when:** an Athlete can view and correct profile data, request account deletion, and leave a coaching relationship without the former Coach retaining active access.
 
 - [ ] Design it (spec): `/architect privacy and account lifecycle`
 
-### 10. International units and dates · needs a decision
+### 11. International units and dates · needs a decision
 
 Serve an English first audience across countries with selectable kilograms or pounds and dates shown in the person's locale.
 **Done when:** each person can choose weight units, stored values remain consistent, and workout dates display correctly for that person's locale and time zone.
@@ -145,14 +162,14 @@ Serve an English first audience across countries with selectable kilograms or po
 
 ## Pilot readiness
 
-### 11. Product monitoring · needs a decision
+### 12. Product monitoring · needs a decision
 
 Capture app failures and a small set of events so the pilot can reveal where the core loop breaks or loses people.
 **Done when:** errors are visible to the operator and Dino records invitation acceptance, workout assignment, workout completion, and Coach review without collecting unnecessary personal content.
 
 - [ ] Design it (spec): `/architect product monitoring`
 
-### 12. Private pilot distribution · needs a decision
+### 13. Private pilot distribution · needs a decision
 
 Give the two Coaches and their adult Athletes a reliable way to install and update Dino on real iPhone and Android devices.
 **Done when:** approved pilot members can install a private build, receive a tested update, and use the complete coaching loop without depending on a developer machine.
@@ -170,7 +187,7 @@ These features stay outside the first private pilot build pass. You may enroll o
 - **Coach custom exercises:** add private exercises outside the shared catalog when pilot use proves the need · from spec 0007 · needs a decision
 - **Dino hosted exercise videos:** add uploads, storage, playback processing, moderation, and deletion only if provider links fail pilot needs · from spec 0007 · needs a decision
 - **Body weight and recovery:** record body weight, sleep, and recovery trends · needs a decision · Beta
-- **Nutrition coaching:** manage meal guidance, calorie, macro, vitamin, and protein targets · needs a decision · Beta
+- **Nutrition targets and tracking:** manage calorie, macro, vitamin, and protein targets beyond the separate Meal Recommendations feature · from spec 0008 · needs a decision · Beta
 - **Portable weekly reports:** export or share a weekly coaching summary · needs a decision
 - **Full program builder:** schedule reusable multiweek programs and progression · needs a decision
 - **Subscription billing and plan limits:** let Coaches purchase plans that govern roster capacity · needs a decision · GA
