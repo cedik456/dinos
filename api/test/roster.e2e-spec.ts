@@ -16,6 +16,9 @@ import {
 } from '../src/database/schema';
 import { DatabaseService } from '../src/database/database.service';
 import { ClerkService } from '../src/identity/clerk.service';
+import { CatalogImportService } from '../src/templates/catalog-import.service';
+
+const TEST_REFERENCE_EXERCISE_ID = '20000000-0000-4000-8000-000000000001';
 
 type InvitationBody = { id: string; email: string; status: string };
 type AcceptBody = {
@@ -91,6 +94,7 @@ describe('Private roster invitations (e2e)', () => {
     app = moduleFixture.createNestApplication();
     await app.init();
     database = moduleFixture.get(DatabaseService);
+    await moduleFixture.get(CatalogImportService).reconcile();
     await database.client.insert(accounts).values([
       {
         id: coachId,
@@ -242,7 +246,13 @@ describe('Private roster invitations (e2e)', () => {
         title: 'Roster strength session',
         assignedDate,
         creationTimeZone: 'Asia/Manila',
-        exercises: [{ name: 'Squat', sets: 3, repetitions: '8' }],
+        exercises: [
+          {
+            referenceExerciseId: TEST_REFERENCE_EXERCISE_ID,
+            sets: 3,
+            repetitions: '8',
+          },
+        ],
       })
       .expect(201)
       .expect(({ body }) => {

@@ -1,7 +1,11 @@
 import { useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 
-import { Text, View } from "@/components/ui/tw";
+import { Pressable, Text, View } from "@/components/ui/tw";
+import type { ReferenceExercise } from "@/features/workouts/template-api";
+import { useReferenceExercises } from "@/features/workouts/template-queries";
+import { ExerciseCatalogFilters } from "@/features/workouts/components/exercise-catalog-filters";
+import { ExerciseVideoEditor } from "@/features/workouts/components/exercise-video-editor";
 import {
   type WorkoutDetail,
   type WorkoutExerciseInput,
@@ -28,10 +32,11 @@ import {
 import { useRosterAthletes } from "@/features/roster/roster-queries";
 
 type ExerciseDraft = {
+  referenceExerciseId: string;
   name: string;
   sets: string;
   repetitions: string;
-  instruction: string;
+  reference: ReferenceExercise | null;
 };
 
 type FormErrors = Record<string, string>;
@@ -68,10 +73,22 @@ function WorkoutEditorContent({
   const [exercises, setExercises] = useState<ExerciseDraft[]>(
     assignment?.exercises.map((exercise) => ({
       name: exercise.name,
+      referenceExerciseId: exercise.referenceExerciseId ?? "",
       sets: String(exercise.sets),
       repetitions: exercise.repetitions,
-      instruction: exercise.instruction ?? "",
-    })) ?? [{ name: "", sets: "3", repetitions: "", instruction: "" }],
+      reference: null,
+    })) ?? [],
+  );
+  const [search, setSearch] = useState("");
+  const [equipment, setEquipment] = useState("");
+  const [primaryMuscle, setPrimaryMuscle] = useState("");
+  const references = useReferenceExercises(actor, true, search, {
+    equipment,
+    primaryMuscle,
+  });
+  const available = useMemo(
+    () => references.data?.pages.flatMap((page) => page.items) ?? [],
+    [references.data],
   );
   const [errors, setErrors] = useState<FormErrors>({});
   const roster = useRosterAthletes(actor, true);
@@ -102,6 +119,30 @@ function WorkoutEditorContent({
     );
   };
 
+  const toggleExercise = (reference: ReferenceExercise) => {
+    setExercises((current) => {
+      const exists = current.some(
+        (exercise) => exercise.referenceExerciseId === reference.id,
+      );
+      if (exists) {
+        return current.filter(
+          (exercise) => exercise.referenceExerciseId !== reference.id,
+        );
+      }
+      if (current.length >= 12) return current;
+      return [
+        ...current,
+        {
+          referenceExerciseId: reference.id,
+          name: reference.name,
+          sets: "",
+          repetitions: "",
+          reference,
+        },
+      ];
+    });
+  };
+
   const validate = () => {
     const next: FormErrors = {};
     if (!assignment && !actor.previewRole && !athleteAccountId) {
@@ -112,8 +153,9 @@ function WorkoutEditorContent({
       next.assignedDate = "Use a date in YYYY-MM-DD format.";
     }
     exercises.forEach((exercise, index) => {
-      if (!exercise.name.trim())
-        next[`name-${index}`] = "Add an exercise name.";
+      if (!exercise.referenceExerciseId) {
+        next[`reference-${index}`] = "Reselect this exercise from the catalog.";
+      }
       const sets = Number(exercise.sets);
       if (!Number.isInteger(sets) || sets < 1 || sets > 20) {
         next[`sets-${index}`] = "Sets must be from 1 through 20.";
@@ -122,6 +164,8 @@ function WorkoutEditorContent({
         next[`repetitions-${index}`] = "Add a repetitions prescription.";
       }
     });
+    if (exercises.length === 0)
+      next.exercises = "Select at least one exercise.";
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -130,10 +174,9 @@ function WorkoutEditorContent({
     if (!validate()) return;
     const normalizedExercises: WorkoutExerciseInput[] = exercises.map(
       (exercise) => ({
-        name: exercise.name,
+        referenceExerciseId: exercise.referenceExerciseId,
         sets: Number(exercise.sets),
         repetitions: exercise.repetitions,
-        instruction: exercise.instruction,
       }),
     );
     const input = {
@@ -296,8 +339,88 @@ function WorkoutEditorContent({
             {exercises.length} of 12
           </Text>
         </View>
+        <WorkoutField
+          label="Search exercise catalog"
+          value={search}
+          onChangeText={setSearch}
+          maxLength={100}
+          placeholder="Squat, cable, dumbbell"
+        />
+        <ExerciseCatalogFilters
+          equipmentValues={references.data?.pages[0]?.filters.equipment ?? []}
+          muscleValues={references.data?.pages[0]?.filters.primaryMuscle ?? []}
+          equipment={equipment}
+          primaryMuscle={primaryMuscle}
+          onEquipment={setEquipment}
+          onPrimaryMuscle={setPrimaryMuscle}
+        />
+        {errors.exercises ? (
+          <Text
+            accessibilityRole="alert"
+            className="font-sans text-caption text-danger"
+          >
+            {errors.exercises}
+          </Text>
+        ) : null}
+        {references.isError ? (
+          <WorkoutMessage
+            tone="error"
+            title="Exercise catalog unavailable"
+            message="Dino could not load the exercise catalog."
+            actionLabel="Try again"
+            onAction={() => void references.refetch()}
+          />
+        ) : null}
+        {available.map((reference) => {
+          const checked = exercises.some(
+            (exercise) => exercise.referenceExerciseId === reference.id,
+          );
+          return (
+            <Pressable
+              key={reference.id}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked }}
+              onPress={() => toggleExercise(reference)}
+              className={
+                checked
+                  ? "min-h-12 flex-row items-center gap-md rounded-card border border-accent bg-accent-soft p-md"
+                  : "min-h-12 flex-row items-center gap-md rounded-card border border-border bg-surface p-md"
+              }
+            >
+              <View
+                className={
+                  checked
+                    ? "size-5 rounded-pill bg-accent"
+                    : "size-5 rounded-pill border border-border"
+                }
+              />
+              <View className="flex-1 gap-xs">
+                <Text className="font-sans text-label font-semibold text-foreground">
+                  {reference.name}
+                </Text>
+                <Text className="font-sans text-caption text-muted">
+                  {reference.primaryMuscle} · {reference.equipment}
+                </Text>
+              </View>
+            </Pressable>
+          );
+        })}
+        {references.hasNextPage ? (
+          <WorkoutButton
+            label={
+              references.isFetchingNextPage
+                ? "Loading more"
+                : "Load more exercises"
+            }
+            variant="secondary"
+            disabled={references.isFetchingNextPage}
+            onPress={() => void references.fetchNextPage()}
+          />
+        ) : null}
         {exercises.map((exercise, index) => (
-          <WorkoutCard key={index}>
+          <WorkoutCard
+            key={`${exercise.referenceExerciseId || "legacy"}-${index}`}
+          >
             <View className="flex-row items-center justify-between gap-md">
               <Text className="font-sans text-label font-semibold text-accent-foreground">
                 EXERCISE {index + 1}
@@ -315,14 +438,17 @@ function WorkoutEditorContent({
                 />
               ) : null}
             </View>
-            <WorkoutField
-              label="Exercise name"
-              value={exercise.name}
-              onChangeText={(value) => updateExercise(index, "name", value)}
-              maxLength={100}
-              error={errors[`name-${index}`]}
-              placeholder="Goblet squat"
-            />
+            <Text className="font-sans text-heading font-bold text-foreground">
+              {exercise.name}
+            </Text>
+            {errors[`reference-${index}`] ? (
+              <Text
+                accessibilityRole="alert"
+                className="font-sans text-caption text-danger"
+              >
+                {errors[`reference-${index}`]}
+              </Text>
+            ) : null}
             <View className="flex-row gap-md">
               <View className="flex-1">
                 <WorkoutField
@@ -348,30 +474,14 @@ function WorkoutEditorContent({
                 />
               </View>
             </View>
-            <WorkoutField
-              label="Instruction, optional"
-              value={exercise.instruction}
-              onChangeText={(value) =>
-                updateExercise(index, "instruction", value)
-              }
-              maxLength={1000}
-              multiline
-              placeholder="Add one useful coaching cue."
-            />
+            {!assignment && exercise.reference ? (
+              <ExerciseVideoEditor
+                actor={actor}
+                exercise={exercise.reference}
+              />
+            ) : null}
           </WorkoutCard>
         ))}
-        {exercises.length < 12 ? (
-          <WorkoutButton
-            label="Add another exercise"
-            variant="secondary"
-            onPress={() =>
-              setExercises((current) => [
-                ...current,
-                { name: "", sets: "3", repetitions: "", instruction: "" },
-              ])
-            }
-          />
-        ) : null}
       </View>
 
       <WorkoutButton

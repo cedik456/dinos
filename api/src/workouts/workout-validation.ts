@@ -93,6 +93,15 @@ function parseExercises(value: unknown): WorkoutExerciseInput[] {
       return invalid(`exercises ${index + 1} is invalid.`);
     }
     const input = item as Record<string, unknown>;
+    const referenceExerciseId = input.referenceExerciseId;
+    if (
+      typeof referenceExerciseId !== 'string' ||
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+        referenceExerciseId,
+      )
+    ) {
+      return invalid(`exercises ${index + 1} referenceExerciseId is invalid.`);
+    }
     if (
       !Number.isInteger(input.sets) ||
       Number(input.sets) < 1 ||
@@ -101,19 +110,13 @@ function parseExercises(value: unknown): WorkoutExerciseInput[] {
       return invalid(`exercises ${index + 1} sets must be from 1 through 20.`);
     }
     return {
-      name: normalizedText(input.name, `exercises ${index + 1} name`, 100)!,
+      referenceExerciseId,
       sets: Number(input.sets),
       repetitions: normalizedText(
         input.repetitions,
         `exercises ${index + 1} repetitions`,
         32,
       )!,
-      instruction: normalizedText(
-        input.instruction,
-        `exercises ${index + 1} instruction`,
-        1000,
-        true,
-      ),
     };
   });
 }
@@ -217,10 +220,9 @@ export function sameWorkoutContent(
     creationTimeZone: string;
   },
   exercises: Array<{
-    name: string;
+    referenceExerciseId: string | null;
     sets: number;
     repetitions: string;
-    instruction: string | null;
   }>,
   input: WorkoutUpsertInput,
 ): boolean {
@@ -234,10 +236,9 @@ export function sameWorkoutContent(
     exercises.every((exercise, index) => {
       const candidate = input.exercises[index];
       return (
-        exercise.name === candidate.name &&
+        exercise.referenceExerciseId === candidate.referenceExerciseId &&
         exercise.sets === candidate.sets &&
-        exercise.repetitions === candidate.repetitions &&
-        exercise.instruction === candidate.instruction
+        exercise.repetitions === candidate.repetitions
       );
     })
   );

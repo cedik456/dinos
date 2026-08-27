@@ -6,10 +6,9 @@ export type WorkoutStatus = "assigned" | "completed" | "reviewed";
 export type WorkoutDateRelation = "past" | "today" | "future";
 
 export type WorkoutExerciseInput = {
-  name: string;
+  referenceExerciseId: string;
   sets: number;
   repetitions: string;
-  instruction?: string | null;
 };
 
 export type WorkoutUpsertInput = {
@@ -43,11 +42,31 @@ export type WorkoutDetail = WorkoutSummary & {
   creationTimeZone: string;
   exercises: {
     id: string;
+    referenceExerciseId: string | null;
     position: number;
     name: string;
     sets: number;
     repetitions: string;
-    instruction: string | null;
+    illustrationFrames:
+      | {
+          index: 1 | 2 | 3;
+          url: string;
+          width: number;
+          height: number;
+        }[]
+      | null;
+    illustrationAttribution: {
+      creator: string;
+      creatorUrl: string;
+      license: string;
+      licenseUrl: string;
+    } | null;
+    video: {
+      provider: "youtube" | "vimeo";
+      videoId: string;
+      creatorName: string;
+      sourceUrl: string;
+    } | null;
   }[];
   completion: { note: string | null; completedAt: string } | null;
   review: { response: string | null; reviewedAt: string } | null;

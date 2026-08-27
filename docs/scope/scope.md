@@ -16,7 +16,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 3   | Account identity and exclusive roles             | Foundation      | in-progress |
 | 4   | Private roster invitations                       | Slice 1         | in-progress |
 | 5   | First assigned workout loop                      | Slice 1         | done        |
-| 6   | Private exercise library and demonstration media | Slice 2         | planned     |
+| 6   | Exercise catalog and demonstration media         | Slice 2         | in-progress |
 | 7   | Reusable workout templates and dated assignments | Slice 2         | in-progress |
 | 8   | Weekly progress and review status                | Slice 3         | in-progress |
 | 9   | Privacy and account lifecycle                    | Slice 3         | planned     |
@@ -85,12 +85,20 @@ Prove the whole product with one narrow real path. A Coach creates one simple wo
 
 ## Slice 2: Reusable coaching work
 
-### 6. Private exercise library and demonstration media · needs a decision
+### 6. Exercise catalog and demonstration media · in-progress
 
-Give each Coach a private exercise library with optional reference exercises and private custom entries. Show video when available, then an image fallback, with written instructions always present.
-**Done when:** a Coach can find or create an exercise without changing another Coach's library, and the Athlete always receives an understandable demonstration in an assigned workout.
+Give every Coach a shared exercise catalog with one private video choice per exercise. Show that video to active Athletes in assigned workouts, with a three image fallback.
+**Done when:** a Coach can find a catalog exercise, attach an allowed video without affecting another Coach, and every new assigned exercise gives the Athlete an understandable demonstration.
 
-- [ ] Design it (spec): `/architect private exercise library and demonstration media`
+- **Spec:** [0007](../specs/0007-exercise-demonstration-media.md)
+- **Code:** `api/src/templates/`, `api/src/workouts/`, `api/src/database/schema.ts`, and `src/features/workouts/`
+- [x] Design it (spec): `/architect exercise catalog and demonstration media`
+- [x] Build it: `/develop exercise catalog and demonstration media`
+  - [x] Add the pinned catalog schema, retry safe import, search, filters, and explicit prescription boundary, covers **AC-1**, **AC-2**, **AC-3**, **AC-12**, and **AC-13**.
+  - [x] Add private Coach video preview, validation, save, removal, ownership, and private logging, covers **AC-4**, **AC-5**, **AC-6**, **AC-11**, and **AC-15**.
+  - [x] Require catalog identity for new assignments and store immutable media snapshots, covers **AC-3**, **AC-7**, and **AC-12**.
+  - [x] Add Athlete playback, illustration fallback, credits, inactive relationship filtering, and existing cache behavior, covers **AC-8**, **AC-9**, **AC-10**, and **AC-14**.
+- [ ] Verify it: `/check verify exercise catalog and demonstration media`
 
 ### 7. Reusable workout templates and dated assignments · in-progress
 
@@ -159,6 +167,8 @@ These features stay outside the first private pilot build pass. You may enroll o
 - **Push and email notifications:** remind Athletes and notify Coaches after key activity · needs a decision
 - **Structured Athlete intake:** collect the coaching questions both pilot Coaches repeatedly need · needs a decision · Beta
 - **Advanced workout logging:** record sets, repetitions, weight, effort, notes, substitutions, and progression · needs a decision
+- **Coach custom exercises:** add private exercises outside the shared catalog when pilot use proves the need · from spec 0007 · needs a decision
+- **Dino hosted exercise videos:** add uploads, storage, playback processing, moderation, and deletion only if provider links fail pilot needs · from spec 0007 · needs a decision
 - **Body weight and recovery:** record body weight, sleep, and recovery trends · needs a decision · Beta
 - **Nutrition coaching:** manage meal guidance, calorie, macro, vitamin, and protein targets · needs a decision · Beta
 - **Portable weekly reports:** export or share a weekly coaching summary · needs a decision

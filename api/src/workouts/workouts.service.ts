@@ -6,6 +6,7 @@ import {
   eq,
   gt,
   gte,
+  inArray,
   lt,
   lte,
   or,
@@ -16,7 +17,9 @@ import { alias } from 'drizzle-orm/pg-core';
 import {
   accounts,
   assignmentExercises,
+  coachExerciseVideos,
   coachingRelationships,
+  referenceExercises,
   workoutAssignments,
   workoutCompletions,
   workoutReviews,
@@ -128,8 +131,13 @@ export class WorkoutsService {
             creationTimeZone: timeZone,
           })
           .returning({ id: workoutAssignments.id });
+        const snapshots = await this.resolveExerciseSnapshots(
+          tx,
+          actor.id,
+          input.exercises,
+        );
         await tx.insert(assignmentExercises).values(
-          input.exercises.map((exercise, index) => ({
+          snapshots.map((exercise, index) => ({
             assignmentId: assignment.id,
             position: index + 1,
             ...exercise,
@@ -332,6 +340,7 @@ export class WorkoutsService {
         .limit(1)
         .then((rows) => rows[0] ?? null),
     ]);
+    const canShowVideo = await this.canShowVideo(actor, row.assignment);
     const summary = this.toSummary(
       actor,
       row.assignment,
@@ -347,11 +356,26 @@ export class WorkoutsService {
       creationTimeZone: row.assignment.creationTimeZone,
       exercises: exercises.map((exercise) => ({
         id: exercise.id,
+        referenceExerciseId: exercise.referenceExerciseId,
         position: exercise.position,
         name: exercise.name,
         sets: exercise.sets,
         repetitions: exercise.repetitions,
-        instruction: exercise.instruction,
+        illustrationFrames: exercise.illustrationFrames,
+        illustrationAttribution: exercise.illustrationAttribution,
+        video:
+          canShowVideo &&
+          exercise.videoProvider &&
+          exercise.videoProviderId &&
+          exercise.videoCreatorName &&
+          exercise.videoSourceUrl
+            ? {
+                provider: exercise.videoProvider,
+                videoId: exercise.videoProviderId,
+                creatorName: exercise.videoCreatorName,
+                sourceUrl: exercise.videoSourceUrl,
+              }
+            : null,
       })),
       completion: completion
         ? {
@@ -454,8 +478,13 @@ export class WorkoutsService {
         await tx
           .delete(assignmentExercises)
           .where(eq(assignmentExercises.assignmentId, assignmentId));
+        const snapshots = await this.resolveExerciseSnapshots(
+          tx,
+          actor.id,
+          input.exercises,
+        );
         await tx.insert(assignmentExercises).values(
-          input.exercises.map((exercise, index) => ({
+          snapshots.map((exercise, index) => ({
             assignmentId,
             position: index + 1,
             ...exercise,
@@ -685,6 +714,74 @@ export class WorkoutsService {
       .from(assignmentExercises)
       .where(eq(assignmentExercises.assignmentId, assignmentId))
       .orderBy(asc(assignmentExercises.position));
+  }
+
+  private async resolveExerciseSnapshots(
+    tx: Parameters<Parameters<DatabaseService['client']['transaction']>[0]>[0],
+    coachAccountId: string,
+    exercises: WorkoutUpsertInput['exercises'],
+  ) {
+    const referenceIds = exercises.map(
+      (exercise) => exercise.referenceExerciseId,
+    );
+    const rows = await tx
+      .select({ reference: referenceExercises, video: coachExerciseVideos })
+      .from(referenceExercises)
+      .leftJoin(
+        coachExerciseVideos,
+        and(
+          eq(coachExerciseVideos.referenceExerciseId, referenceExercises.id),
+          eq(coachExerciseVideos.coachAccountId, coachAccountId),
+        ),
+      )
+      .where(
+        and(
+          inArray(referenceExercises.id, referenceIds),
+          eq(referenceExercises.catalogStatus, 'active'),
+        ),
+      );
+    if (rows.length !== new Set(referenceIds).size) {
+      return workoutError(
+        'VALIDATION_FAILED',
+        HttpStatus.UNPROCESSABLE_ENTITY,
+        'One or more selected exercises are unavailable.',
+      );
+    }
+    const byId = new Map(rows.map((row) => [row.reference.id, row]));
+    return exercises.map((exercise) => {
+      const row = byId.get(exercise.referenceExerciseId)!;
+      return {
+        referenceExerciseId: row.reference.id,
+        name: row.reference.name,
+        sets: exercise.sets,
+        repetitions: exercise.repetitions,
+        illustrationFrames: row.reference.illustrationFrames,
+        illustrationAttribution: row.reference.illustrationAttribution,
+        videoProvider: row.video?.provider ?? null,
+        videoProviderId: row.video?.providerVideoId ?? null,
+        videoCreatorName: row.video?.creatorName ?? null,
+        videoSourceUrl: row.video?.canonicalSourceUrl ?? null,
+      };
+    });
+  }
+
+  private async canShowVideo(actor: WorkoutActor, assignment: AssignmentRow) {
+    if (actor.role === 'Coach' || actor.id === PREVIEW_ATHLETE_ID) return true;
+    const [relationship] = await this.database.client
+      .select({ id: coachingRelationships.id })
+      .from(coachingRelationships)
+      .where(
+        and(
+          eq(coachingRelationships.coachAccountId, assignment.coachAccountId),
+          eq(
+            coachingRelationships.athleteAccountId,
+            assignment.athleteAccountId,
+          ),
+          eq(coachingRelationships.status, 'active'),
+        ),
+      )
+      .limit(1);
+    return Boolean(relationship);
   }
 
   private toSummary(

@@ -13,7 +13,10 @@ import {
   workoutReviews,
 } from '../src/database/schema';
 import { DatabaseService } from '../src/database/database.service';
+import { CatalogImportService } from '../src/templates/catalog-import.service';
 import { PreviewSeedService } from '../src/workouts/preview-seed.service';
+
+const TEST_REFERENCE_EXERCISE_ID = '20000000-0000-4000-8000-000000000001';
 
 type AssignmentBody = { id: string };
 type AssignmentPageBody = {
@@ -47,7 +50,13 @@ function workoutInput(
     overviewNote: null,
     assignedDate,
     creationTimeZone,
-    exercises: [{ name: 'Squat', sets: 3, repetitions: '10' }],
+    exercises: [
+      {
+        referenceExerciseId: TEST_REFERENCE_EXERCISE_ID,
+        sets: 3,
+        repetitions: '10',
+      },
+    ],
   };
 }
 
@@ -75,6 +84,7 @@ describe('First assigned workout loop (e2e)', () => {
     await app.init();
     database = moduleFixture.get(DatabaseService);
     await moduleFixture.get(PreviewSeedService).reconcile();
+    await moduleFixture.get(CatalogImportService).reconcile();
   });
 
   afterAll(async () => {
@@ -111,13 +121,22 @@ describe('First assigned workout loop (e2e)', () => {
       creationTimeZone: 'Asia/Manila',
       exercises: [
         {
-          name: 'Goblet squat',
+          referenceExerciseId: TEST_REFERENCE_EXERCISE_ID,
           sets: 3,
           repetitions: '8 to 12',
-          instruction: 'Pause at the bottom.',
         },
       ],
     };
+
+    await request(app.getHttpServer())
+      .put(`/reference-exercises/${TEST_REFERENCE_EXERCISE_ID}/video`)
+      .set('x-dino-preview-role', 'coach')
+      .send({
+        url: 'https://youtu.be/abcdefghijk',
+        creatorName: 'Test Creator',
+        rightsConfirmed: true,
+      })
+      .expect(200);
 
     const created = await request(app.getHttpServer())
       .post('/workout-assignments')
@@ -133,7 +152,33 @@ describe('First assigned workout loop (e2e)', () => {
       completion: null,
       review: null,
       actions: { canEdit: true, canComplete: false, canReview: false },
+      exercises: [
+        {
+          referenceExerciseId: TEST_REFERENCE_EXERCISE_ID,
+          illustrationFrames: [{ index: 1 }, { index: 2 }, { index: 3 }],
+          video: {
+            provider: 'youtube',
+            videoId: 'abcdefghijk',
+            creatorName: 'Test Creator',
+          },
+        },
+      ],
     });
+
+    await request(app.getHttpServer())
+      .delete(`/reference-exercises/${TEST_REFERENCE_EXERCISE_ID}/video`)
+      .set('x-dino-preview-role', 'coach')
+      .expect(204);
+    await request(app.getHttpServer())
+      .get(`/workout-assignments/${createdBody.id}`)
+      .set('x-dino-preview-role', 'athlete')
+      .expect(200)
+      .expect(({ body }) => {
+        expect(
+          (body as { exercises: Array<{ video: { videoId: string } }> })
+            .exercises[0]?.video.videoId,
+        ).toBe('abcdefghijk');
+      });
 
     const retried = await request(app.getHttpServer())
       .post('/workout-assignments')

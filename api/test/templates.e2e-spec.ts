@@ -13,6 +13,7 @@ import {
   workoutTemplates,
 } from '../src/database/schema';
 import { DatabaseService } from '../src/database/database.service';
+import { CatalogImportService } from '../src/templates/catalog-import.service';
 import { PreviewSeedService } from '../src/workouts/preview-seed.service';
 
 type TemplateBody = { id: string; name: string; exercises: unknown[] };
@@ -29,8 +30,8 @@ type ExercisePageBody = {
   items: Array<{
     id: string;
     name: string;
-    defaultSets: number;
-    defaultRepetitions: string;
+    equipment: string;
+    primaryMuscle: string;
   }>;
   nextCursor: string | null;
 };
@@ -60,6 +61,7 @@ describe('Minimal workout templates (e2e)', () => {
     await app.init();
     database = moduleFixture.get(DatabaseService);
     await moduleFixture.get(PreviewSeedService).reconcile();
+    await moduleFixture.get(CatalogImportService).reconcile();
     await database.client
       .insert(accounts)
       .values({
@@ -166,6 +168,49 @@ describe('Minimal workout templates (e2e)', () => {
       .expect(200);
     const secondBody = second.body as ExercisePageBody;
     expect(secondBody.items[0]?.id).not.toBe(firstBody.items[0]?.id);
+
+    const filtered = await request(app.getHttpServer())
+      .get('/reference-exercises?equipment=Cable&primaryMuscle=Back')
+      .set('x-dino-preview-role', 'coach')
+      .expect(200);
+    expect(
+      (filtered.body as ExercisePageBody).items.every(
+        (item) => item.equipment === 'Cable' && item.primaryMuscle === 'Back',
+      ),
+    ).toBe(true);
+  });
+
+  it('normalizes and manages one Coach video without exposing the submitted URL', async () => {
+    const [reference] = await database.client
+      .select({ id: referenceExercises.id })
+      .from(referenceExercises)
+      .where(eq(referenceExercises.catalogStatus, 'active'))
+      .limit(1);
+    await request(app.getHttpServer())
+      .post('/reference-exercises/video-preview')
+      .set('x-dino-preview-role', 'coach')
+      .send({ url: 'https://www.youtube.com/watch?v=abcdefghijk' })
+      .expect(201)
+      .expect(({ body }) => {
+        expect(body).toMatchObject({
+          provider: 'youtube',
+          videoId: 'abcdefghijk',
+          canonicalSourceUrl: 'https://www.youtube.com/watch?v=abcdefghijk',
+        });
+      });
+    await request(app.getHttpServer())
+      .put(`/reference-exercises/${reference.id}/video`)
+      .set('x-dino-preview-role', 'coach')
+      .send({
+        url: 'https://youtu.be/abcdefghijk',
+        creatorName: 'Test Creator',
+        rightsConfirmed: true,
+      })
+      .expect(200);
+    await request(app.getHttpServer())
+      .delete(`/reference-exercises/${reference.id}/video`)
+      .set('x-dino-preview-role', 'coach')
+      .expect(204);
   });
 
   it('creates a private ordered template from selected references', async () => {
@@ -174,6 +219,15 @@ describe('Minimal workout templates (e2e)', () => {
       .from(referenceExercises)
       .orderBy(referenceExercises.name)
       .limit(2);
+    await request(app.getHttpServer())
+      .put(`/reference-exercises/${references[0].id}/video`)
+      .set('x-dino-preview-role', 'coach')
+      .send({
+        url: 'https://youtu.be/abcdefghijk',
+        creatorName: 'Assignment Creator',
+        rightsConfirmed: true,
+      })
+      .expect(200);
     const response = await request(app.getHttpServer())
       .post('/workout-templates')
       .set('x-dino-preview-role', 'coach')
@@ -182,9 +236,8 @@ describe('Minimal workout templates (e2e)', () => {
         overviewNote: 'Keep the session simple.',
         exercises: references.map((exercise) => ({
           referenceExerciseId: exercise.id,
-          sets: exercise.defaultSets,
-          repetitions: exercise.defaultRepetitions,
-          instruction: exercise.instruction,
+          sets: 3,
+          repetitions: '8 to 12',
         })),
       })
       .expect(201);
@@ -193,10 +246,26 @@ describe('Minimal workout templates (e2e)', () => {
     expect(body).toMatchObject({
       name: 'My quick full body',
       exercises: [
-        { referenceExerciseId: references[0]?.id, position: 1 },
-        { referenceExerciseId: references[1]?.id, position: 2 },
+        {
+          referenceExerciseId: references[0]?.id,
+          position: 1,
+          currentVideo: {
+            provider: 'youtube',
+            videoId: 'abcdefghijk',
+            creatorName: 'Assignment Creator',
+          },
+        },
+        {
+          referenceExerciseId: references[1]?.id,
+          position: 2,
+          currentVideo: null,
+        },
       ],
     });
+    await request(app.getHttpServer())
+      .delete(`/reference-exercises/${references[0].id}/video`)
+      .set('x-dino-preview-role', 'coach')
+      .expect(204);
   });
 
   it('rejects unknown and repeated reference exercises', async () => {
@@ -208,7 +277,6 @@ describe('Minimal workout templates (e2e)', () => {
       referenceExerciseId: reference.id,
       sets: 3,
       repetitions: '8 to 12',
-      instruction: null,
     };
     await request(app.getHttpServer())
       .post('/workout-templates')

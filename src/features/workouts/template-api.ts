@@ -5,16 +5,43 @@ import type { WorkoutActor } from "@/features/workouts/workout-auth";
 export type ReferenceExercise = {
   id: string;
   name: string;
-  defaultSets: number;
-  defaultRepetitions: string;
-  instruction: string | null;
+  exerciseType: string;
+  equipment: string;
+  primaryMuscle: string;
+  secondaryMuscles: string[];
+  isStretch: boolean;
+  illustrationFrames: ExerciseIllustrationFrame[];
+  illustrationAttribution: ExerciseIllustrationAttribution;
+  currentVideo: ExerciseVideo | null;
 };
+
+export type ExerciseIllustrationFrame = {
+  index: 1 | 2 | 3;
+  url: string;
+  width: number;
+  height: number;
+};
+
+export type ExerciseIllustrationAttribution = {
+  creator: string;
+  creatorUrl: string;
+  license: string;
+  licenseUrl: string;
+};
+
+export type ExerciseVideoPreview = {
+  provider: "youtube" | "vimeo";
+  videoId: string;
+  canonicalSourceUrl: string;
+  embedUrl: string;
+};
+
+export type ExerciseVideo = ExerciseVideoPreview & { creatorName: string };
 
 export type TemplateExerciseInput = {
   referenceExerciseId: string;
   sets: number;
   repetitions: string;
-  instruction?: string | null;
 };
 
 export type TemplateCreateInput = {
@@ -36,7 +63,7 @@ export type WorkoutTemplate = {
     name: string;
     sets: number;
     repetitions: string;
-    instruction: string | null;
+    currentVideo: ExerciseVideo | null;
   }[];
   createdAt: string;
   updatedAt: string;
@@ -45,6 +72,10 @@ export type WorkoutTemplate = {
 export type TemplatePage<T> = {
   items: T[];
   nextCursor: string | null;
+};
+
+export type ReferenceExercisePage = TemplatePage<ReferenceExercise> & {
+  filters: { equipment: string[]; primaryMuscle: string[] };
 };
 
 export class TemplateApiError extends Error {
@@ -100,7 +131,10 @@ async function request<T>(
       body:
         options.body === undefined ? undefined : JSON.stringify(options.body),
     });
-    if (response.ok) return (await response.json()) as T;
+    if (response.ok) {
+      if (response.status === 204) return undefined as T;
+      return (await response.json()) as T;
+    }
     const payload = (await response.json().catch(() => null)) as {
       code?: string;
       message?: string;
@@ -145,12 +179,19 @@ export const templateApi = {
   listExercises: (
     actor: WorkoutActor,
     query: string,
+    filters: { equipment?: string; primaryMuscle?: string } = {},
     cursor?: string,
     signal?: AbortSignal,
   ) =>
-    request<TemplatePage<ReferenceExercise>>(
+    request<ReferenceExercisePage>(
       actor,
-      `/reference-exercises${queryString({ q: query, cursor, limit: 20 })}`,
+      `/reference-exercises${queryString({
+        q: query,
+        equipment: filters.equipment,
+        primaryMuscle: filters.primaryMuscle,
+        cursor,
+        limit: 20,
+      })}`,
       { signal },
     ),
   detail: (actor: WorkoutActor, id: string, signal?: AbortSignal) =>
@@ -159,5 +200,24 @@ export const templateApi = {
     request<WorkoutTemplate>(actor, "/workout-templates", {
       method: "POST",
       body: input,
+    }),
+  previewVideo: (actor: WorkoutActor, url: string) =>
+    request<ExerciseVideoPreview>(actor, "/reference-exercises/video-preview", {
+      method: "POST",
+      body: { url },
+    }),
+  saveVideo: (
+    actor: WorkoutActor,
+    referenceExerciseId: string,
+    input: { url: string; creatorName: string; rightsConfirmed: true },
+  ) =>
+    request<ExerciseVideo>(
+      actor,
+      `/reference-exercises/${referenceExerciseId}/video`,
+      { method: "PUT", body: input },
+    ),
+  removeVideo: (actor: WorkoutActor, referenceExerciseId: string) =>
+    request<void>(actor, `/reference-exercises/${referenceExerciseId}/video`, {
+      method: "DELETE",
     }),
 };

@@ -28,6 +28,7 @@ import {
   useReviewWorkout,
   useWorkoutDetail,
 } from "@/features/workouts/workout-queries";
+import { ExerciseDemonstration } from "@/features/workouts/components/exercise-demonstration";
 
 function LifecycleAction({
   actor,
@@ -186,10 +187,8 @@ function DetailContent({
                   {exercise.sets} {exercise.sets === 1 ? "set" : "sets"} ·{" "}
                   {exercise.repetitions}
                 </Text>
-                {exercise.instruction ? (
-                  <Text className="font-sans text-body text-muted">
-                    {exercise.instruction}
-                  </Text>
+                {actor.role === "Athlete" ? (
+                  <ExerciseDemonstration exercise={exercise} />
                 ) : null}
               </View>
             </View>

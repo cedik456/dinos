@@ -1,9 +1,13 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Post,
+  Put,
   Query,
   Req,
   UseGuards,
@@ -16,6 +20,8 @@ import {
   parseTemplateCreate,
   parseTemplateId,
   parseTemplateList,
+  parseExerciseVideo,
+  parseVideoPreview,
 } from './template-validation';
 import { TemplatesService } from './templates.service';
 
@@ -34,6 +40,30 @@ export class TemplatesController {
       this.actor(request),
       parseTemplateList(query, true),
     );
+  }
+
+  @Post('reference-exercises/video-preview')
+  previewVideo(@Body() body: unknown) {
+    return this.templates.previewVideo(parseVideoPreview(body));
+  }
+
+  @Put('reference-exercises/:id/video')
+  putVideo(
+    @Req() request: AccountRequest,
+    @Param('id') id: string,
+    @Body() body: unknown,
+  ) {
+    return this.templates.putVideo(
+      this.actor(request),
+      parseTemplateId(id),
+      parseExerciseVideo(body),
+    );
+  }
+
+  @Delete('reference-exercises/:id/video')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteVideo(@Req() request: AccountRequest, @Param('id') id: string) {
+    await this.templates.deleteVideo(this.actor(request), parseTemplateId(id));
   }
 
   @Get('workout-templates')

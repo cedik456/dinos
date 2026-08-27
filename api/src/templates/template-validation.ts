@@ -1,6 +1,7 @@
 import { HttpStatus } from '@nestjs/common';
 import { IdentityException } from '../identity/identity-errors';
 import type {
+  ExerciseVideoInput,
   TemplateCreateInput,
   TemplateExerciseInput,
   TemplateListInput,
@@ -73,12 +74,6 @@ function parseExercise(value: unknown, index: number): TemplateExerciseInput {
       `exercises ${index + 1} repetitions`,
       32,
     )!,
-    instruction: text(
-      input.instruction,
-      `exercises ${index + 1} instruction`,
-      1000,
-      true,
-    ),
   };
 }
 
@@ -124,6 +119,34 @@ export function parseTemplateList(
     cursor: single(query.cursor, 'cursor') ?? null,
     limit,
     query: normalized,
+    equipment: allowSearch
+      ? (single(query.equipment, 'equipment')?.trim() ?? '')
+      : '',
+    primaryMuscle: allowSearch
+      ? (single(query.primaryMuscle, 'primaryMuscle')?.trim() ?? '')
+      : '',
+  };
+}
+
+export function parseVideoPreview(value: unknown): string {
+  if (!value || typeof value !== 'object') {
+    return invalid('Request body is required.');
+  }
+  return text((value as Record<string, unknown>).url, 'url', 500)!;
+}
+
+export function parseExerciseVideo(value: unknown): ExerciseVideoInput {
+  if (!value || typeof value !== 'object') {
+    return invalid('Request body is required.');
+  }
+  const input = value as Record<string, unknown>;
+  if (input.rightsConfirmed !== true) {
+    return invalid('rightsConfirmed must be true.');
+  }
+  return {
+    url: text(input.url, 'url', 500)!,
+    creatorName: text(input.creatorName, 'creatorName', 100)!,
+    rightsConfirmed: true,
   };
 }
 

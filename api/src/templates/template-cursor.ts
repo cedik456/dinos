@@ -6,6 +6,8 @@ type CursorPayload = {
   actorId: string;
   kind: 'exercises' | 'templates';
   query: string;
+  equipment: string;
+  primaryMuscle: string;
   offset: number;
 };
 
@@ -29,6 +31,8 @@ export function decodeTemplateCursor(
       parsed.actorId !== expected.actorId ||
       parsed.kind !== expected.kind ||
       parsed.query !== expected.query ||
+      parsed.equipment !== expected.equipment ||
+      parsed.primaryMuscle !== expected.primaryMuscle ||
       !Number.isInteger(parsed.offset) ||
       Number(parsed.offset) < 0
     ) {

@@ -20,6 +20,7 @@ import {
   WorkoutMessage,
   WorkoutScreen,
 } from "@/features/workouts/components/workout-ui";
+import { ExerciseCatalogFilters } from "@/features/workouts/components/exercise-catalog-filters";
 import {
   useCreateTemplate,
   useReferenceExercises,
@@ -37,9 +38,14 @@ function TemplateEditorContent({ actor }: { actor: WorkoutActor }) {
   const [name, setName] = useState("");
   const [overviewNote, setOverviewNote] = useState("");
   const [search, setSearch] = useState("");
+  const [equipment, setEquipment] = useState("");
+  const [primaryMuscle, setPrimaryMuscle] = useState("");
   const [selected, setSelected] = useState<ExerciseDraft[]>([]);
   const [errors, setErrors] = useState<FormErrors>({});
-  const references = useReferenceExercises(actor, true, search);
+  const references = useReferenceExercises(actor, true, search, {
+    equipment,
+    primaryMuscle,
+  });
   const create = useCreateTemplate(actor);
   const available = useMemo(
     () => references.data?.pages.flatMap((page) => page.items) ?? [],
@@ -65,10 +71,9 @@ function TemplateEditorContent({ actor }: { actor: WorkoutActor }) {
         {
           referenceExerciseId: exercise.id,
           name: exercise.name,
-          sets: exercise.defaultSets,
-          setsText: String(exercise.defaultSets),
-          repetitions: exercise.defaultRepetitions,
-          instruction: exercise.instruction,
+          sets: 0,
+          setsText: "",
+          repetitions: "",
         },
       ];
     });
@@ -76,7 +81,7 @@ function TemplateEditorContent({ actor }: { actor: WorkoutActor }) {
 
   const updateExercise = (
     id: string,
-    field: "setsText" | "repetitions" | "instruction",
+    field: "setsText" | "repetitions",
     value: string,
   ) => {
     setSelected((current) =>
@@ -119,7 +124,6 @@ function TemplateEditorContent({ actor }: { actor: WorkoutActor }) {
           referenceExerciseId: exercise.referenceExerciseId,
           sets: Number(exercise.setsText),
           repetitions: exercise.repetitions,
-          instruction: exercise.instruction,
         })),
       },
       { onSuccess: () => router.replace("/coach/programs") },
@@ -189,6 +193,14 @@ function TemplateEditorContent({ actor }: { actor: WorkoutActor }) {
           maxLength={100}
           placeholder="Cable, dumbbell, walking"
         />
+        <ExerciseCatalogFilters
+          equipmentValues={references.data?.pages[0]?.filters.equipment ?? []}
+          muscleValues={references.data?.pages[0]?.filters.primaryMuscle ?? []}
+          equipment={equipment}
+          primaryMuscle={primaryMuscle}
+          onEquipment={setEquipment}
+          onPrimaryMuscle={setPrimaryMuscle}
+        />
         <Text className="font-sans text-label font-semibold text-accent-foreground">
           {selected.length} selected
         </Text>
@@ -252,9 +264,7 @@ function TemplateEditorContent({ actor }: { actor: WorkoutActor }) {
                   {exercise.name}
                 </Text>
                 <Text className="font-sans text-caption text-muted">
-                  {exercise.defaultSets}{" "}
-                  {exercise.defaultSets === 1 ? "set" : "sets"} ·{" "}
-                  {exercise.defaultRepetitions}
+                  {exercise.primaryMuscle} · {exercise.equipment}
                 </Text>
               </View>
             </Pressable>
@@ -281,7 +291,7 @@ function TemplateEditorContent({ actor }: { actor: WorkoutActor }) {
               Prescription
             </Text>
             <Text className="font-sans text-body text-muted">
-              Defaults are ready. Adjust only what this template needs.
+              Enter the sets and repetitions or duration this template needs.
             </Text>
           </View>
           {selected.map((exercise, index) => (
@@ -345,19 +355,6 @@ function TemplateEditorContent({ actor }: { actor: WorkoutActor }) {
                   />
                 </View>
               </View>
-              <WorkoutField
-                label="Instruction, optional"
-                value={exercise.instruction ?? ""}
-                onChangeText={(value) =>
-                  updateExercise(
-                    exercise.referenceExerciseId,
-                    "instruction",
-                    value,
-                  )
-                }
-                maxLength={1000}
-                multiline
-              />
             </WorkoutCard>
           ))}
         </View>

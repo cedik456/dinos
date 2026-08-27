@@ -6,7 +6,6 @@ export type TemplateExerciseInput = {
   referenceExerciseId: string;
   sets: number;
   repetitions: string;
-  instruction: string | null;
 };
 
 export type TemplateCreateInput = {
@@ -19,14 +18,46 @@ export type TemplateListInput = {
   cursor: string | null;
   limit: number;
   query: string;
+  equipment: string;
+  primaryMuscle: string;
+};
+
+export type ExerciseVideoProvider = 'youtube' | 'vimeo';
+
+export type ExerciseVideoPreviewDto = {
+  provider: ExerciseVideoProvider;
+  videoId: string;
+  canonicalSourceUrl: string;
+  embedUrl: string;
+};
+
+export type ExerciseVideoInput = {
+  url: string;
+  creatorName: string;
+  rightsConfirmed: true;
 };
 
 export type ReferenceExerciseDto = {
   id: string;
   name: string;
-  defaultSets: number;
-  defaultRepetitions: string;
-  instruction: string | null;
+  exerciseType: string;
+  equipment: string;
+  primaryMuscle: string;
+  secondaryMuscles: string[];
+  isStretch: boolean;
+  illustrationFrames: Array<{
+    index: 1 | 2 | 3;
+    url: string;
+    width: number;
+    height: number;
+  }>;
+  illustrationAttribution: {
+    creator: string;
+    creatorUrl: string;
+    license: string;
+    licenseUrl: string;
+  };
+  currentVideo: ({ creatorName: string } & ExerciseVideoPreviewDto) | null;
 };
 
 export type WorkoutTemplateDto = {
@@ -42,7 +73,7 @@ export type WorkoutTemplateDto = {
     name: string;
     sets: number;
     repetitions: string;
-    instruction: string | null;
+    currentVideo: ({ creatorName: string } & ExerciseVideoPreviewDto) | null;
   }>;
   createdAt: string;
   updatedAt: string;
@@ -51,4 +82,8 @@ export type WorkoutTemplateDto = {
 export type PageDto<T> = {
   items: T[];
   nextCursor: string | null;
+};
+
+export type ReferenceExercisePageDto = PageDto<ReferenceExerciseDto> & {
+  filters: { equipment: string[]; primaryMuscle: string[] };
 };

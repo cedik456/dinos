@@ -1,7 +1,9 @@
 import { sql } from 'drizzle-orm';
 import {
+  boolean,
   check,
   index,
+  jsonb,
   pgEnum,
   pgTable,
   date,
@@ -49,6 +51,35 @@ export const coachingRelationshipStatus = pgEnum(
   'coaching_relationship_status',
   ['active', 'ended'],
 );
+export const referenceExerciseCatalogStatus = pgEnum(
+  'reference_exercise_catalog_status',
+  ['active', 'unavailable'],
+);
+export const exerciseVideoProvider = pgEnum('exercise_video_provider', [
+  'youtube',
+  'vimeo',
+]);
+
+export type ExerciseIllustrationFrame = {
+  index: 1 | 2 | 3;
+  url: string;
+  width: number;
+  height: number;
+};
+
+export type ExerciseIllustrationAttribution = {
+  creator: string;
+  creatorUrl: string;
+  license: string;
+  licenseUrl: string;
+  source?: {
+    name: string;
+    url: string;
+    license: string;
+    licenseUrl: string;
+    changes: string;
+  };
+};
 
 export const accounts = pgTable(
   'accounts',
@@ -204,20 +235,81 @@ export const referenceExercises = pgTable(
   {
     id: uuid('id').primaryKey(),
     name: varchar('name', { length: 100 }).notNull(),
-    defaultSets: smallint('default_sets').notNull(),
+    defaultSets: smallint('default_sets'),
     defaultRepetitions: varchar('default_repetitions', {
       length: 32,
-    }).notNull(),
-    instruction: varchar('instruction', { length: 1000 }),
+    }),
+    catalogSource: varchar('catalog_source', { length: 100 }),
+    catalogVersion: varchar('catalog_version', { length: 32 }),
+    catalogSlug: varchar('catalog_slug', { length: 160 }),
+    catalogStatus: referenceExerciseCatalogStatus('catalog_status')
+      .notNull()
+      .default('unavailable'),
+    exerciseType: varchar('exercise_type', { length: 64 }),
+    equipment: varchar('equipment', { length: 100 }),
+    primaryMuscle: varchar('primary_muscle', { length: 100 }),
+    secondaryMuscles: jsonb('secondary_muscles').$type<string[]>(),
+    isStretch: boolean('is_stretch'),
+    illustrationFrames: jsonb('illustration_frames').$type<
+      ExerciseIllustrationFrame[]
+    >(),
+    illustrationAttribution: jsonb(
+      'illustration_attribution',
+    ).$type<ExerciseIllustrationAttribution>(),
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .defaultNow(),
   },
   (table) => [
     uniqueIndex('reference_exercises_name_unique').on(table.name),
+    uniqueIndex('reference_exercises_source_slug_unique')
+      .on(table.catalogSource, table.catalogSlug)
+      .where(
+        sql`${table.catalogSource} is not null and ${table.catalogSlug} is not null`,
+      ),
+    index('reference_exercises_catalog_filter_idx').on(
+      table.catalogStatus,
+      table.equipment,
+      table.primaryMuscle,
+      table.name,
+    ),
     check(
       'reference_exercises_default_sets_range',
       sql`${table.defaultSets} between 1 and 20`,
+    ),
+  ],
+);
+
+export const coachExerciseVideos = pgTable(
+  'coach_exercise_videos',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    coachAccountId: uuid('coach_account_id')
+      .notNull()
+      .references(() => accounts.id, { onDelete: 'restrict' }),
+    referenceExerciseId: uuid('reference_exercise_id')
+      .notNull()
+      .references(() => referenceExercises.id, { onDelete: 'restrict' }),
+    provider: exerciseVideoProvider('provider').notNull(),
+    providerVideoId: varchar('provider_video_id', { length: 128 }).notNull(),
+    canonicalSourceUrl: varchar('canonical_source_url', {
+      length: 500,
+    }).notNull(),
+    creatorName: varchar('creator_name', { length: 100 }).notNull(),
+    sharingConfirmedAt: timestamp('sharing_confirmed_at', {
+      withTimezone: true,
+    }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('coach_exercise_videos_owner_reference_unique').on(
+      table.coachAccountId,
+      table.referenceExerciseId,
     ),
   ],
 );
@@ -263,7 +355,6 @@ export const workoutTemplateExercises = pgTable(
     position: smallint('position').notNull(),
     sets: smallint('sets').notNull(),
     repetitions: varchar('repetitions', { length: 32 }).notNull(),
-    instruction: varchar('instruction', { length: 1000 }),
   },
   (table) => [
     uniqueIndex('workout_template_exercises_position_unique').on(
@@ -352,11 +443,24 @@ export const assignmentExercises = pgTable(
     assignmentId: uuid('assignment_id')
       .notNull()
       .references(() => workoutAssignments.id, { onDelete: 'cascade' }),
+    referenceExerciseId: uuid('reference_exercise_id').references(
+      () => referenceExercises.id,
+      { onDelete: 'restrict' },
+    ),
     position: smallint('position').notNull(),
     name: varchar('name', { length: 100 }).notNull(),
     sets: smallint('sets').notNull(),
     repetitions: varchar('repetitions', { length: 32 }).notNull(),
-    instruction: varchar('instruction', { length: 1000 }),
+    illustrationFrames: jsonb('illustration_frames').$type<
+      ExerciseIllustrationFrame[]
+    >(),
+    illustrationAttribution: jsonb(
+      'illustration_attribution',
+    ).$type<ExerciseIllustrationAttribution>(),
+    videoProvider: exerciseVideoProvider('video_provider'),
+    videoProviderId: varchar('video_provider_id', { length: 128 }),
+    videoCreatorName: varchar('video_creator_name', { length: 100 }),
+    videoSourceUrl: varchar('video_source_url', { length: 500 }),
   },
   (table) => [
     uniqueIndex('assignment_exercises_assignment_position_unique').on(
@@ -419,6 +523,7 @@ export type AccountStatus = Account['status'];
 export type RosterInvitation = typeof rosterInvitations.$inferSelect;
 export type CoachingRelationship = typeof coachingRelationships.$inferSelect;
 export type ReferenceExercise = typeof referenceExercises.$inferSelect;
+export type CoachExerciseVideo = typeof coachExerciseVideos.$inferSelect;
 export type WorkoutTemplate = typeof workoutTemplates.$inferSelect;
 export type WorkoutAssignment = typeof workoutAssignments.$inferSelect;
 export type WorkoutAssignmentStatus = WorkoutAssignment['status'];

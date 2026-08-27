@@ -28,9 +28,11 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "ts-node -r tsconfig-paths/register src/database/migrate.ts",
     "identity:operator": "ts-node -r tsconfig-paths/register src/identity/operator.ts",
-    "workout:seed-preview": "ts-node -r tsconfig-paths/register src/workouts/preview-seed.ts"
+    "workout:seed-preview": "ts-node -r tsconfig-paths/register src/workouts/preview-seed.ts",
+    "exercise:import": "ts-node -r tsconfig-paths/register src/templates/catalog-import.ts"
   },
   "dependencies": {
+    "@bryllim/workout-guide": "1.0.0",
     "@clerk/backend": "^3.16.10",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.4",

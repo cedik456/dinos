@@ -3,8 +3,12 @@ import { useEffect, useMemo, useState } from "react";
 
 import { Text, View } from "@/components/ui/tw";
 import { useRosterAthletes } from "@/features/roster/roster-queries";
-import type { WorkoutTemplate } from "@/features/workouts/template-api";
+import type {
+  ExerciseVideo,
+  WorkoutTemplate,
+} from "@/features/workouts/template-api";
 import { useTemplateDetail } from "@/features/workouts/template-queries";
+import { ExerciseVideoEditor } from "@/features/workouts/components/exercise-video-editor";
 import {
   useWorkoutActor,
   type WorkoutActor,
@@ -23,10 +27,11 @@ import { useCreateWorkout } from "@/features/workouts/workout-queries";
 
 type ExerciseDraft = {
   id: string;
+  referenceExerciseId: string;
   name: string;
   sets: string;
   repetitions: string;
-  instruction: string;
+  currentVideo: ExerciseVideo | null;
 };
 
 type FormErrors = Record<string, string>;
@@ -73,10 +78,11 @@ function TemplateAssignmentContent({
   const [exercises, setExercises] = useState<ExerciseDraft[]>(
     template.exercises.map((exercise) => ({
       id: exercise.id,
+      referenceExerciseId: exercise.referenceExerciseId,
       name: exercise.name,
       sets: String(exercise.sets),
       repetitions: exercise.repetitions,
-      instruction: exercise.instruction ?? "",
+      currentVideo: exercise.currentVideo,
     })),
   );
   const [errors, setErrors] = useState<FormErrors>({});
@@ -90,7 +96,7 @@ function TemplateAssignmentContent({
 
   const updateExercise = (
     id: string,
-    field: "sets" | "repetitions" | "instruction",
+    field: "sets" | "repetitions",
     value: string,
   ) => {
     setExercises((current) =>
@@ -131,10 +137,9 @@ function TemplateAssignmentContent({
         assignedDate,
         creationTimeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         exercises: exercises.map((exercise) => ({
-          name: exercise.name,
+          referenceExerciseId: exercise.referenceExerciseId,
           sets: Number(exercise.sets),
           repetitions: exercise.repetitions,
-          instruction: exercise.instruction,
         })),
       },
       { onSuccess: () => router.replace("/coach/programs") },
@@ -297,15 +302,13 @@ function TemplateAssignmentContent({
                 />
               </View>
             </View>
-            <WorkoutField
-              label="Instruction, optional"
-              value={exercise.instruction}
-              onChangeText={(value) =>
-                updateExercise(exercise.id, "instruction", value)
-              }
-              maxLength={1000}
-              multiline
-              placeholder="Add one useful coaching cue."
+            <ExerciseVideoEditor
+              actor={actor}
+              exercise={{
+                id: exercise.referenceExerciseId,
+                name: exercise.name,
+                currentVideo: exercise.currentVideo,
+              }}
             />
           </WorkoutCard>
         ))}
